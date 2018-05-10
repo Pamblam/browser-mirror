@@ -2,7 +2,8 @@ process.title = 'bm-server';
 var webSocketServer = require('websocket').server;
 var http = require('http');
 
-var port = 1337;
+// if a port number is passedinto the command, use that, else default to 1337
+var port = (process.argv[2]||"").trim() || 1337;
 
 var sessions = {};
 

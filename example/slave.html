@@ -5,9 +5,11 @@
 		<title>browser-mirror slave example</title>
 	</head>
 	<body>
+		<button id="farts" onclick="alert('farts')">farts</button>
+		<textarea></textarea>
 		<script src="../bm-client.js"></script>
 		<script>
-			new BMClient(1, '127.0.0.1', 1337, 'slave').start();
+			BMClient(1, '127.0.0.1', 'slave', 1337).start();
 		</script>
 	</body>
 </html>

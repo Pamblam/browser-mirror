@@ -5,9 +5,14 @@
 		<title>browser-mirror master example</title>
 	</head>
 	<body>
+		<h1 id="header"></h1>
+		<p id="message"></p>
+		<hr>
+		<button id="finish" onclick="alert('farts')">farts</button>
+		<textarea></textarea>
 		<script src="../bm-client.js"></script>
 		<script>
-			new BMClient(1, '127.0.0.1', 1337, 'master').start();
+			BMClient(1, '127.0.0.1', 'master', 1337).start();
 		</script>
 	</body>
 </html>
