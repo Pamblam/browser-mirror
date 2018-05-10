@@ -1,6 +1,6 @@
 {
   "name": "browser-mirror",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "mirror a site remotely",
   "main": "mirror.js",
   "scripts": {
