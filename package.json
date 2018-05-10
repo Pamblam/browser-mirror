@@ -1,0 +1,22 @@
+{
+  "name": "web-mirror",
+  "version": "1.0.0",
+  "description": "mirror a site remotely",
+  "main": "mirror.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pamblam/web-mirror.git"
+  },
+  "keywords": [
+    "mirror"
+  ],
+  "author": "pamblam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pamblam/web-mirror/issues"
+  },
+  "homepage": "https://github.com/Pamblam/web-mirror#readme"
+}
