@@ -1,5 +1,5 @@
 {
-  "name": "web-mirror",
+  "name": "browser-mirror",
   "version": "1.0.0",
   "description": "mirror a site remotely",
   "main": "mirror.js",
@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/Pamblam/web-mirror/issues"
   },
-  "homepage": "https://github.com/Pamblam/web-mirror#readme"
+  "homepage": "https://github.com/Pamblam/web-mirror#readme",
+  "dependencies": {
+    "websocket": "^1.0.26"
+  }
 }
