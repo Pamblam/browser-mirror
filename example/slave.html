@@ -2,14 +2,46 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>browser-mirror slave example</title>
+		<title>Browser-Mirror Slave Example</title>
+		<style>
+			input, textarea, button{
+				display:block;
+				width: 500px;
+				border-radius: 3px;
+				margin:2px;
+				padding:2px;
+				border:1px solid black;
+			}
+		</style>
 	</head>
 	<body>
-		<button id="farts" onclick="alert('farts')">farts</button>
-		<textarea></textarea>
+		<h1>Browser-Mirror Slave Example</h1>
+		<hr>
+		
+		<h2 id="header"></h2>
+		<p id="message"></p>
+		<hr>
+		
+		<input id="ti" placeholder="Enter a title">
+		<textarea id="ta" placeholder="Enter some details"></textarea>
+		<button id="finish">Do some Stuff</button>
+		<a href="#" id="clear">Clear</a>
+		
 		<script src="../bm-client.js"></script>
 		<script>
-			BMClient(1, '127.0.0.1', 'slave', 1337).start();
+			
+			document.getElementById('finish').addEventListener('click', function(){
+				document.getElementById('header').innerHTML = document.getElementById('ti').value;
+				document.getElementById('message').innerHTML = document.getElementById('ta').value;
+			});
+			
+			document.getElementById('clear').addEventListener('click', function(e){
+				e.preventDefault();
+				document.getElementById('header').innerHTML = '';
+				document.getElementById('message').innerHTML = '';
+			});
+			
+			BMClient(1, '192.168.0.5', 'slave', 1337).start();
 		</script>
 	</body>
 </html>

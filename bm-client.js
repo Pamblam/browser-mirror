@@ -7,6 +7,11 @@ const BMClient = (function(){
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	const bodyStyle = document.body.currentStyle || window.getComputedStyle(document.body);
 	
+	// Cursor images
+	const textCursor = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAATCAYAAACz13xgAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gULBC4OYw+UrwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABFSURBVBjT7cnBCYAwAEPRV+kKxVHE7VymrlJXEYeoB3uogjePfggk+QErJhwuEjYdSwsY3Klvwi8+FLHrwWNkzNjbN6KcULgHb8nigusAAAAASUVORK5CYII=';
+	const defaultCursor = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAXCAMAAAAMT46wAAAAt1BMVEUAAAAAAADn5+f8/PwAAAAAAAAAAAAAAAAAAAAFBQXExMQAAADS0tIAAAC0tLRXV1czMzO+vr79/f3x8fEAAAC7u7uurq53d3dlZWXZ2dl6enoAAADLy8sAAABFRUWHh4ddXV3e3t6fn5+Ojo7Dw8Pw8PDU1NRubm6Li4va2tqgoKA5OTkiIiIAAAD///9CQkIQEBCFhYVUVFQfHx9qamovLy8FBQVbW1tKSkp1dXWVlZXIyMjw8PAzP/JcAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfiBQoOFh+rC+oVAAAAkUlEQVQY05XPyw6CMBAF0KbuWkMTCCYKwRAXxsd0oKUI6P9/l31gtUvv7sxNZjKkIElkm7IvU552CQc1sYSI28jB0kTnSinU8PEGcdIA8KgDjXECmK+eOghgOTp2q2DMvnxKm8DRTpA298qzyxZXi7BZs4a6ej10Ebzsbc1ungdOyMvVP4/lTO4FjyzouSL/5g0GxxehF4eK3gAAAABJRU5ErkJggg==';
+	const pointerCursor = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAATCAYAAACgADyUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gULBDAMWUDKXAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAI0SURBVDjLjZOxa1pRFId/9z7ladEqOOT5EBpJMURclNAlBHR4+QOkWLp0iUu3TtlahCyFbIGsLRVcAi2ZjIQOleKkeaBCFQRtmkGxpHmENnm+Z+7p0AZMkxq/6dzL+S6cc89hmCAcDj9QVfUTgK/9fj/T7Xa/YwZcqqp+qNfrVCqVxvPz8zvTkvlEzBhjQpZlSJIkARCzitfOQgjp6sFZxD+XnMPpdGqxWOxdJBJ5BOA+gHvTRAYAl5eX0DTt4d7e3rPFxcW3wWDwcyQSeen3+9UrxzEhCSICABAR5ubmsLCwAK/Xu5TP5zEYDJa2t7efG4bxtNPplLiqqkkAKQAq59z8Wx8uLi4AALZtQ1EUEJFzY2PDl06n38fj8ScOn89XzGQy0vHx8cdyuexhjCEUCmF5eRkAkEqlEAgEIITAyckJcrmcu1KpvEEymSTTNEWtVqNoNErNZpNuo9FokK7rNBqNaHV1dYREIvFia2uLiEjUajU6PT2laZimSSsrK7ZD1/Udy7Jkv9//OpvNYlY4APvo6KjcarVgWdbdAudgjDk4ALhcrsNisfjq4ODgTrHb7ZIQ4lACgPPzc+F2uz2KoqQSiYRXluX/iuvr61ar1Xr873bsNxqNW5sihCAiorW1tV+BQCA6OXKj8Xi8WSgUBlefj+urg93dXZydnW0yxr5NjhwNh8Mv1Wr1h2maim3bN5qi6zra7fa+YRg/J0UoioJerwdN08A5vyEahgGPx8MMw8Bvazg5Ze2f4+IAAAAASUVORK5CYII=';
+	
 	/**
 	 * CSS Selector Generator, v1.0.4
 	 * by Riki Fridrich <riki@fczbkk.com> (http://fczbkk.com)
@@ -22,18 +27,13 @@ const BMClient = (function(){
 	 */
 	var state = {
 		cursor: {
+			type: 'default',
 			pos: {
 				x: 0,
 				y: 0
-			},
-			click: null,
-			focus: null
+			}
 		},
-		keys: {
-			activeInput: null,
-			textValue: null,
-			eventTarget: null
-		}
+		events: {}
 	};
 	
 	/**
@@ -142,7 +142,7 @@ const BMClient = (function(){
 	 */
 	function _createSlaveBroswerCursor(){
 		this.cursor = new Image;
-		this.cursor.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAXCAMAAAAMT46wAAAAt1BMVEUAAAAAAADn5+f8/PwAAAAAAAAAAAAAAAAAAAAFBQXExMQAAADS0tIAAAC0tLRXV1czMzO+vr79/f3x8fEAAAC7u7uurq53d3dlZWXZ2dl6enoAAADLy8sAAABFRUWHh4ddXV3e3t6fn5+Ojo7Dw8Pw8PDU1NRubm6Li4va2tqgoKA5OTkiIiIAAAD///9CQkIQEBCFhYVUVFQfHx9qamovLy8FBQVbW1tKSkp1dXWVlZXIyMjw8PAzP/JcAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfiBQoOFh+rC+oVAAAAkUlEQVQY05XPyw6CMBAF0KbuWkMTCCYKwRAXxsd0oKUI6P9/l31gtUvv7sxNZjKkIElkm7IvU552CQc1sYSI28jB0kTnSinU8PEGcdIA8KgDjXECmK+eOghgOTp2q2DMvnxKm8DRTpA298qzyxZXi7BZs4a6ej10Ebzsbc1ungdOyMvVP4/lTO4FjyzouSL/5g0GxxehF4eK3gAAAABJRU5ErkJggg==';
+		this.cursor.src = defaultCursor;
 		this.cursor.style.position = 'absolute';
 		this.cursor.style.zIndex = 99999999999;
 		this.cursor.style.top = 0;
@@ -164,6 +164,25 @@ const BMClient = (function(){
 	}
 	
 	/**
+	 * 'private' method for monitoring mouse cursor changes
+	 * @returns {BMClient}
+	 */
+	function _monitorMasterMouseCursor(){
+		if(this.role == 'slave') return this;
+		document.addEventListener('mouseover',function(e){
+			var cursor = e.target.style.cursor;
+			if(!~['default', 'pointer', 'text'].indexOf(cursor)) cursor = 'default';
+			if(!e.target.style.cursor){
+				if(e.target.tagName === 'A') cursor = 'pointer';
+				if(e.target.tagName === 'TEXTAREA') cursor = 'text';
+				if(e.target.tagName === 'INPUT' && !~['radio', 'checkbox'].indexOf((e.target.getAttribute('type')||"").toLowerCase())) cursor = 'text';
+			}
+			state.cursor.type = cursor;
+		},false);
+		return this;
+	}
+	
+	/**
 	 * 'private' method for monitoring browser state of the master
 	 * and updateing state on the slaves
 	 * @returns {BMClient}
@@ -171,39 +190,55 @@ const BMClient = (function(){
 	function _monitorMasterBrowserState(){
 		if(this.role == 'slave') return this;
 		var self = this;
+		_monitorMasterMouseCursor.call(self);
 		document.addEventListener('mousemove', function(e){
 			if(self.state != 'open') return;
 			state.cursor.pos = {x:e.clientX-parseFloat(bodyStyle['margin-left']), y:e.clientY-parseFloat(bodyStyle['margin-top'])};
 			_broadcastMasterState.call(self);
 		});
-		document.addEventListener('click', function(e){
-			if(self.state != 'open') return;
-			var activeEle = document.activeElement;
-			var clickSelector = new CssSelectorGenerator().getSelector(e.target);
-			var focusSelector = new CssSelectorGenerator().getSelector(activeEle);
-			if(activeEle.tagName == 'TEXTAREA' || activeEle.tagName == 'INPUT'){
-				state.keys.activeInput = focusSelector;
-				state.keys.textValue = activeEle.value;
-			}else{
-				state.keys.activeInput = null;
-				state.keys.textValue = null;
-			}
-			state.cursor.click = clickSelector || null;
-			state.cursor.focus = focusSelector || null;
-			_broadcastMasterState.call(self);
-			state.cursor.click = null;
+		
+		// Focus events
+		['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
+			document.addEventListener(evtType, function(e){
+				state.events.FocusEvent = {
+					target: new CssSelectorGenerator().getSelector(e.target),
+					type: evtType
+				};
+				_broadcastMasterState.call(self);
+				delete state.events.FocusEvent;
+			});
 		});
-		document.addEventListener('keyup', function(e){
-			state.keys.eventTarget = new CssSelectorGenerator().getSelector(e.target);
-			if(e.target.tagName == 'TEXTAREA' || e.target.tagName == 'INPUT'){
-				state.keys.activeInput = state.keys.eventTarget;
-				state.keys.textValue = e.target.value;
-			}else{
-				state.keys.activeInput = null;
-				state.keys.textValue = null;
-			}
-			_broadcastMasterState.call(self);
+		
+		// Keyboard events
+		['keydown', 'keypress', 'keyup'].forEach(evtType=>{
+			document.addEventListener(evtType, function(e){
+				state.events.KeyboardEvent = {
+					target: new CssSelectorGenerator().getSelector(e.target),
+					type: evtType,
+					key: e.key,
+					altKey: e.altKey,
+					ctrlKey: e.ctrlKey,
+					shiftKey: e.shiftKey,
+					metaKey: e.metaKey,
+					value: ~['TEXTAREA','INPUT'].indexOf(e.target.tagName)?e.target.value:false
+				};
+				_broadcastMasterState.call(self);
+				delete state.events.KeyboardEvent;
+			});
 		});
+		
+		// Mouse events
+		['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
+			document.addEventListener(evtType, function(e){
+				state.events.MouseEvent = {
+					target: new CssSelectorGenerator().getSelector(e.target),
+					type: evtType
+				};
+				_broadcastMasterState.call(self);
+				delete state.events.MouseEvent;
+			});
+		});
+		
 		return this;
 	}
 	
@@ -215,16 +250,51 @@ const BMClient = (function(){
 		if(this.role == 'master') return this;	
 		this.cursor.style.top = (state.cursor.pos.y+parseInt(bodyStyle['margin-top']))+"px";
 		this.cursor.style.left = (state.cursor.pos.x+parseInt(bodyStyle['margin-left']))+"px";
-		if(state.cursor.click){
-			document.querySelector(state.cursor.click).click();
-			state.cursor.click = null;
-		}
-		if(state.cursor.focus){
-			document.querySelector(state.cursor.focus).focus();
-			state.cursor.focus = null;
-		}
-		if(state.keys.activeInput){
-			document.querySelector(state.keys.activeInput).value = state.keys.textValue;
+		
+		if(state.cursor.type === 'pointer') this.cursor.src = pointerCursor;
+		else if(state.cursor.type === 'text') this.cursor.src = textCursor;
+		else this.cursor.src = defaultCursor;
+		
+		if(state.events){
+			for(let evtConstructor in state.events){
+				let event = state.events[evtConstructor];
+				let type = event.type;
+				let target = event.target;
+				let tgt = document.querySelector(target);
+				let evt;
+				switch(evtConstructor){
+					case 'FocusEvent':
+						evt = new FocusEvent(type, {
+							bubbles: true,
+							cancelable: true,
+							view: window
+						});
+						if(type == 'focusin' || type == 'focus') tgt.focus();
+						break;
+					case 'KeyboardEvent':
+						evt = new KeyboardEvent("keydown");
+						evt.key=event.key;
+						evt.keyCode=evt.key.charCodeAt(0);
+						evt.which=evt.keyCode;
+						evt.altKey=event.altKey;
+						evt.ctrlKey=event.ctrlKey;
+						evt.shiftKey=event.shiftKey;
+						evt.metaKey=event.metaKey;
+						evt.bubbles=true;
+						if(event.value !== false) tgt.value = event.value;
+						break;
+					case 'MouseEvent':
+						evt = new MouseEvent(type, {
+							bubbles: true,
+							cancelable: true,
+							view: window
+						});
+						break;
+				}
+				
+				tgt.dispatchEvent(evt);
+				delete state.events[evtConstructor];
+			}
 		}
 		return this;
 	}
