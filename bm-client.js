@@ -56,6 +56,8 @@ const BMClient = (function(){
 			this.url = url;
 			this.port = port;
 			this.error_cb = e=>{throw e};
+			this.session_cb = data=>{};
+			this.session_error_cb = data=>{this.error_cb(new Error(data.message))};
 			this.connection = null;
 			this.state = 'pending';
 			this.cursor = null;
@@ -70,18 +72,47 @@ const BMClient = (function(){
 			this.error_cb = error_cb;
 			return this;
 		}
+		
+		/**
+		 * Set a function to handle all session updates
+		 * @param {Function} session_cb - A function that will intercept all updates
+		 * @returns {BMClient}
+		 */
+		onSessionUpdate(session_cb){
+			this.session_cb = session_cb;
+			return this;
+		}
 
+		/**
+		 * Set a function to handle all session errors
+		 * @param {Function} session_error_cb - A function that will intercept all session erros
+		 * @returns {BMClient}
+		 */
+		onSessionError(session_error_cb){
+			this.session_error_cb = session_error_cb;
+			return this;
+		}
+		
+		start(){
+			if(this.role !== 'master') return;
+			this.connection.send(JSON.stringify({
+				action: 'start_session',
+				sessionid: this.sessionid
+			}));
+			return this;
+		}
+		
 		/**
 		 * Start mirroring client or master
 		 * @returns {BMClient}
 		 */
-		start(){
+		connect(){
 			if(!window.WebSocket){
 				this.error_cb(new Error("Browser doesn't support websockets"));
 				return this;
 			}
 			this.connection = new WebSocket(`ws://${this.url}:${this.port}`);
-			this.connection.onerror = this.error_cb;
+			this.connection.onerror = ()=>this.error_cb(new Error('Can\'t establish connection to the server.'));
 			this.connection.onmessage = data=>{
 				data = JSON.parse(data.data);
 				switch(data.action){
@@ -91,25 +122,35 @@ const BMClient = (function(){
 							_setSlaveState.call(this);
 						}
 						break;
+					case 'session_error':
+						_giveSlaveCursorBack.call(this);
+						this.session_error_cb(data);
+						break;
+					case 'session_update':
+						this.session_cb(data);
+						if(data.message === 'Session has started.'){
+							if(this.role === 'master'){
+								_monitorMasterBrowserState.call(this);
+							}else{
+								_hideSlaveBrowserCursor.call(this);
+								_createSlaveBroswerCursor.call(this);
+							}
+						}
+						break;
 				}
 			};
 			this.connection.onopen = ()=>{
 				this.state = 'open';
 				_initSession.call(this);
-				if(this.role === 'master'){
-					_monitorMasterBrowserState.call(this);
-				}else{
-					_hideSlaveBrowserCursor.call(this);
-					_createSlaveBroswerCursor.call(this);
-				}
 				_monitorServerConnectionState.call(this);
 			};
+			return this;
 		}
 	}
 	
 	/**
 	 * 'private' method for initiating the session with the server
-	 * @returns {undefined}
+	 * @returns {BMClient}
 	 */
 	function _initSession(){
 		this.connection.send(JSON.stringify({
@@ -148,6 +189,15 @@ const BMClient = (function(){
 		this.cursor.style.top = 0;
 		this.cursor.style.left = 0;
 		document.body.appendChild(this.cursor);
+		return this;
+	}
+	
+	function _giveSlaveCursorBack(){
+		this.cursor.style.display = 'none';
+		document.body.style.cursor = 'default';
+		document.querySelectorAll('*').forEach(ele=>{
+			ele.style.cursor = 'default';
+		});
 		return this;
 	}
 	
@@ -261,6 +311,7 @@ const BMClient = (function(){
 				let type = event.type;
 				let target = event.target;
 				let tgt = document.querySelector(target);
+				if(!tgt) continue;
 				let evt;
 				switch(evtConstructor){
 					case 'FocusEvent':
