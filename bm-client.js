@@ -193,7 +193,7 @@ const BMClient = (function(){
 	}
 	
 	function _giveSlaveCursorBack(){
-		this.cursor.style.display = 'none';
+		if(this.cursor) this.cursor.style.display = 'none';
 		document.body.style.cursor = 'default';
 		document.querySelectorAll('*').forEach(ele=>{
 			ele.style.cursor = 'default';
