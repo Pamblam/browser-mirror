@@ -57,6 +57,7 @@ const BMClient = (function(){
 			this.port = port;
 			this.error_cb = e=>{throw e};
 			this.session_cb = data=>{};
+			this.state_change_cb = state=>{};
 			this.session_error_cb = data=>{this.error_cb(new Error(data.message))};
 			this.connection = null;
 			this.state = 'pending';
@@ -93,6 +94,21 @@ const BMClient = (function(){
 			return this;
 		}
 		
+		onStateChange(state_change_cb){
+			if(this.role == 'master') return this;	
+			this.state_change_cb = state_change_cb;
+			return this;
+		}
+		
+		setState(state){
+			if(this.role !== 'master') return;
+			this.connection.send(JSON.stringify({
+				action: 'set_passthru_state',
+				state: state
+			}));
+			return this;
+		}
+		
 		start(){
 			if(this.role !== 'master') return;
 			this.connection.send(JSON.stringify({
@@ -116,6 +132,10 @@ const BMClient = (function(){
 			this.connection.onmessage = data=>{
 				data = JSON.parse(data.data);
 				switch(data.action){
+					case 'set_passthru_state':
+						this.state_change_cb(data.state);
+						break;
+						
 					case 'set_state':
 						if(data.state.cursor.pos){
 							state = data.state;

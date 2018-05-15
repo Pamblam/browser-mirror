@@ -100,6 +100,17 @@ wsServer.on('request', function (request) {
 				});
 				break;
 				
+			case "set_passthru_state":
+				if(role !== 'master') break;
+				session.slaves.forEach(slave=>{
+					if(null === slave) return;
+					slave.sendUTF(JSON.stringify({
+						action: 'set_passthru_state', 
+						state: data.state
+					}));
+				});
+				break;
+				
 			case "start_session":
 				session.started = true;
 				broadcastSessionUpdate('Session has started.');

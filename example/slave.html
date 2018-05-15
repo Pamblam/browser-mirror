@@ -58,7 +58,7 @@
 		<input id="ti" placeholder="Enter a title">
 		<textarea id="ta" placeholder="Enter some details"></textarea>
 		<button id="finish">Do some Stuff</button>
-		<a href="#" id="clear">Clear</a>
+		<a href="#" id="clear">Clear</a> | <a href="#" id="rnd">Random Number</a>
 		
 		<div id="modal">
 			<div id="div-inner">
@@ -71,23 +71,13 @@
 		
 		<script src="../bm-client.js"></script>
 		<script>
-			
-			document.getElementById('finish').addEventListener('click', function(){
-				document.getElementById('header').innerHTML = document.getElementById('ti').value;
-				document.getElementById('message').innerHTML = document.getElementById('ta').value;
-			});
-			
-			document.getElementById('clear').addEventListener('click', function(e){
-				e.preventDefault();
-				document.getElementById('header').innerHTML = '';
-				document.getElementById('message').innerHTML = '';
-			});
+			var randomState;
 			
 			var innerDiv = document.getElementById('div-inner');
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			
-			const mirror = BMClient(1, 'mercury.ourtownamerica.com', 'slave', 1337);
+			const mirror = BMClient(1, '127.0.0.1', 'slave', 1337);
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
@@ -101,7 +91,28 @@
 				if(!started) document.getElementById('membercount').innerHTML = data.members;
 				if(data.message === 'Session has started.') modal.style.display = 'none';
 			});
+			mirror.onStateChange(state=>{
+				randomState = state.random;
+				document.getElementById('ta').value = randomState;
+			});
 			mirror.connect();
+			
+			document.getElementById('finish').addEventListener('click', function(){
+				document.getElementById('header').innerHTML = document.getElementById('ti').value;
+				document.getElementById('message').innerHTML = document.getElementById('ta').value;
+			});
+			
+			document.getElementById('clear').addEventListener('click', function(e){
+				e.preventDefault();
+				document.getElementById('ti').value = '';
+				document.getElementById('ta').value = '';
+				document.getElementById('header').innerHTML = '';
+				document.getElementById('message').innerHTML = '';
+			});
+			
+			document.getElementById('rnd').addEventListener('click', function(e){
+				e.preventDefault();
+			});
 		</script>
 	</body>
 </html>

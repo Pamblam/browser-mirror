@@ -58,7 +58,7 @@
 		<input id="ti" placeholder="Enter a title">
 		<textarea id="ta" placeholder="Enter some details"></textarea>
 		<button id="finish">Do some Stuff</button>
-		<a href="#" id="clear">Clear</a>
+		<a href="#" id="clear">Clear</a> | <a href="#" id="rnd">Random Number</a>
 		
 		<div id="modal">
 			<div id="div-inner">
@@ -71,23 +71,13 @@
 		
 		<script src="../bm-client.js"></script>
 		<script>
-			
-			document.getElementById('finish').addEventListener('click', function(){
-				document.getElementById('header').innerHTML = document.getElementById('ti').value;
-				document.getElementById('message').innerHTML = document.getElementById('ta').value;
-			});
-			
-			document.getElementById('clear').addEventListener('click', function(e){
-				e.preventDefault();
-				document.getElementById('header').innerHTML = '';
-				document.getElementById('message').innerHTML = '';
-			});
+			var randomState;
 			
 			var innerDiv = document.getElementById('div-inner');
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			var startBtn = document.getElementById('start_session')
-			const mirror = BMClient(1, 'quigon.ourtownamerica.com', 'master', 1337);
+			const mirror = BMClient(1, '127.0.0.1', 'master', 1337);
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
@@ -108,6 +98,28 @@
 			
 			startBtn.addEventListener('click', function(){
 				mirror.start();
+			});
+			
+			document.getElementById('finish').addEventListener('click', function(){
+				document.getElementById('header').innerHTML = document.getElementById('ti').value;
+				document.getElementById('message').innerHTML = document.getElementById('ta').value;
+			});
+			
+			document.getElementById('clear').addEventListener('click', function(e){
+				e.preventDefault();
+				document.getElementById('header').innerHTML = '';
+				document.getElementById('message').innerHTML = '';
+				document.getElementById('ti').value = '';
+				document.getElementById('ta').value = '';
+			});
+			
+			document.getElementById('rnd').addEventListener('click', function(e){
+				e.preventDefault();
+				randomState = Math.random();
+				document.getElementById('ta').value = randomState;
+				mirror.setState({
+					random: randomState
+				});
 			});
 		</script>
 	</body>
