@@ -4,3 +4,4 @@ npm init -y
 npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
 chmod +x bm-server
+touch logs.txt && chmod 777 logs.txt

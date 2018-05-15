@@ -45,6 +45,11 @@
 				border:1ps solid black;
 				border-radius: 9px;
 			}
+			#scrollable{
+				border: 1px solid black;
+				height: 300px;
+				overflow: scroll;
+			}
 		</style>
 	</head>
 	<body>
@@ -67,6 +72,128 @@
 				
 			</div>
 		</div>
+		<div id="scrollable">
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+		</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
 		<div id="toast">this is a toast message</div>
 		
 		<script src="../bm-client.js"></script>
@@ -77,7 +204,7 @@
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			
-			const mirror = BMClient(1, '127.0.0.1', 'slave', 1337);
+			const mirror = BMClient(1, 'quigon.ourtownamerica.com', 'slave', 1337);
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
@@ -88,10 +215,11 @@
 				toast.innerHTML = data.message;
 				toast.style.display = 'block';
 				setTimeout(()=>{toast.style.display='none'}, 3000);
-				if(!started) document.getElementById('membercount').innerHTML = data.members;
+				if(!started && document.getElementById('membercount')) document.getElementById('membercount').innerHTML = data.members;
 				if(data.message === 'Session has started.') modal.style.display = 'none';
 			});
 			mirror.onStateChange(state=>{
+				console.log("state changed", state);
 				randomState = state.random;
 				document.getElementById('ta').value = randomState;
 			});

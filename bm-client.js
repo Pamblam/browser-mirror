@@ -33,7 +33,8 @@ const BMClient = (function(){
 				y: 0
 			}
 		},
-		events: {}
+		events: {},
+		scroll: {ele: null, x:0, y:0}
 	};
 	
 	/**
@@ -267,6 +268,16 @@ const BMClient = (function(){
 			_broadcastMasterState.call(self);
 		});
 		
+		// Listen for scrolls
+		[document, ...Array.from(document.querySelectorAll('*'))].forEach(ele=>{
+			ele.addEventListener('scroll', function(e){
+				state.scroll.ele = new CssSelectorGenerator().getSelector(e.target);
+				state.scroll.y = e.target.scrollTop || window.scrollY;
+				state.scroll.x = e.target.scrollLeft || window.scrollX;
+				_broadcastMasterState.call(self);
+			});
+		});
+		
 		// Focus events
 		['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
 			document.addEventListener(evtType, function(e){
@@ -317,13 +328,24 @@ const BMClient = (function(){
 	 * @returns {BMClient}
 	 */
 	function _setSlaveState(){
-		if(this.role == 'master') return this;	
-		this.cursor.style.top = (state.cursor.pos.y+parseInt(bodyStyle['margin-top']))+"px";
-		this.cursor.style.left = (state.cursor.pos.x+parseInt(bodyStyle['margin-left']))+"px";
+		if(this.role == 'master') return this;
+		var yofst = !state.scroll.ele?state.scroll.y:0;
+		var xofst = !state.scroll.ele?state.scroll.x:0;
+		if(this.cursor){
+			this.cursor.style.top = (state.cursor.pos.y + yofst + parseInt(bodyStyle['margin-top']))+"px";
+			this.cursor.style.left = (state.cursor.pos.x + xofst + parseInt(bodyStyle['margin-left']))+"px";
+		}
 		
 		if(state.cursor.type === 'pointer') this.cursor.src = pointerCursor;
 		else if(state.cursor.type === 'text') this.cursor.src = textCursor;
 		else this.cursor.src = defaultCursor;
+		
+		if(!state.scroll.ele){
+			window.scrollTo(state.scroll.x, state.scroll.y);
+		}else{
+			document.querySelector(state.scroll.ele).scrollLeft = state.scroll.x;
+			document.querySelector(state.scroll.ele).scrollTop = state.scroll.y;
+		}
 		
 		if(state.events){
 			for(let evtConstructor in state.events){

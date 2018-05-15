@@ -22,20 +22,19 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
  1) Navigate to where ever you want to install the server.
  2) Create a new directory for the server 
 ```
-mkdir browser-mirror && cd browser-mirror
+mkdir bm-server && cd bm-server
 ```
  3) Run the installer 
- ```
+```
  curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer | bash
 ```
  4) Run `./bm-server` to output everything to the console as it runs **OR**
-      - Run `./bm-server > bmlogs.txt 2>&1 &` to run in background and output to a log file **OR**
-      - Run `./bm-server > /dev/null 2>&1 &` to run it in the background and ignore all output.
+      - Run `./bm-server > logs.txt 2>&1 &` to run in background and output to the log file
  5) To stop server cmd-c (or ctrl-c) if running in foreground, else `killall bm-server`
  
  #### Implement it
   
- The master page will control all the "slave" pages.
+ Download and add [`bm-client.js`](https://raw.githubusercontent.com/Pamblam/browser-mirror/master/bm-client.js) to your page. The master page will control all the "slave" pages.
 
 ##### Set up the constructor.
 

@@ -45,6 +45,11 @@
 				border:1ps solid black;
 				border-radius: 9px;
 			}
+			#scrollable{
+				border: 1px solid black;
+				height: 300px;
+				overflow: scroll;
+			}
 		</style>
 	</head>
 	<body>
@@ -67,6 +72,128 @@
 				<button id="start_session" style="display:none;">Start Session</button>
 			</div>
 		</div>
+		<div id="scrollable">
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+			<div>Scroll</div>
+		</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
+		<div>Scroll</div>
 		<div id="toast">this is a toast message</div>
 		
 		<script src="../bm-client.js"></script>
@@ -77,21 +204,19 @@
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			var startBtn = document.getElementById('start_session')
-			const mirror = BMClient(1, '127.0.0.1', 'master', 1337);
+			const mirror = BMClient(1, 'quigon.ourtownamerica.com', 'master', 1337);
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
 				console.log(err);
 			});	
-			var started = false;
+			
 			mirror.onSessionUpdate(data=>{
 				toast.innerHTML = data.message;
 				toast.style.display = 'block';
 				setTimeout(()=>{toast.style.display='none'}, 3000);
-				if(!started){
-					startBtn.style.display = data.slaves ? 'block' : 'none';
-					document.getElementById('slavecount').innerHTML = data.slaves;
-				}
+				startBtn.style.display = data.slaves ? 'block' : 'none';
+				if(document.getElementById('slavecount')) document.getElementById('slavecount').innerHTML = data.slaves;
 				if(data.message === 'Session has started.') modal.style.display = 'none';
 			});
 			mirror.connect();
@@ -117,6 +242,7 @@
 				e.preventDefault();
 				randomState = Math.random();
 				document.getElementById('ta').value = randomState;
+				console.log("state chafngegsd");	
 				mirror.setState({
 					random: randomState
 				});
