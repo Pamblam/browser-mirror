@@ -63,7 +63,7 @@
 		<input id="ti" placeholder="Enter a title">
 		<textarea id="ta" placeholder="Enter some details"></textarea>
 		<button id="finish">Do some Stuff</button>
-		<a href="#" id="clear">Clear</a> | <a href="#" id="rnd">Random Number</a>
+		<a href="#" id="clear">Clear</a> | <a href="#" id="rnd">Random Number</a> | <a href="#" id="scr">create scrolling element</a>
 		
 		<div id="modal">
 			<div id="div-inner">
@@ -219,7 +219,6 @@
 				if(data.message === 'Session has started.') modal.style.display = 'none';
 			});
 			mirror.onStateChange(state=>{
-				console.log("state changed", state);
 				randomState = state.random;
 				document.getElementById('ta').value = randomState;
 			});
@@ -240,6 +239,18 @@
 			
 			document.getElementById('rnd').addEventListener('click', function(e){
 				e.preventDefault();
+			});
+			
+			document.getElementById('scr').addEventListener('click', function(e){
+				e.preventDefault();
+				var div = document.createElement('div');
+				div.setAttribute('style', 'width:100%; height:100%; background-color:rgba(255,255,255,0.9); margin:0; padding: 0; overflow: scroll; position:absolute; top:0; left:0;');
+				div.innerHTML = '<br>&nbsp;&nbsp;<a href=# id="close"><b>x close</b></a><Br>'+("<div style='padding:1em;'>Sroll...</div>".repeat(50));
+				document.body.appendChild(div);
+				document.getElementById('close').addEventListener('click', function(e){
+					e.preventDefault();
+					document.body.removeChild(div);
+				});
 			});
 		</script>
 	</body>
