@@ -29,7 +29,7 @@ mkdir bm-server && cd bm-server
  curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer | bash
 ```
  4) Run `./bm-server` to output everything to the console as it runs **OR**
-      - Run `./bm-server > logs.txt 2>&1 &` to run in background and output to the log file
+      - Run `nohup ./bm-server > logs.txt 2>&1 &` to run in background and output to the log file
  5) To stop server cmd-c (or ctrl-c) if running in foreground, else `killall bm-server`
  
  #### Implement it
@@ -86,5 +86,4 @@ in the client....
 
 ### TODO
 
- - Scroll Event
- - Decent Real-world screencast
+ - Decent Real-world screencast gif to better explain what this does
