@@ -1,5 +1,6 @@
 
 
+
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
 <h1 align="center">Browser-Mirror</h1>
@@ -15,7 +16,7 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
   - **Clients**
     - HTML5 browsers with support for ECMA6 & Websockets 
 
-## Quickstart
+## Quickstart (For Mac & Linux)
 
 #### Install the server
 
@@ -24,9 +25,10 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
 ```
 mkdir bm-server && cd bm-server
 ```
- 3) Run the installer 
+ 3) Login as root (if you need to), and run the installer 
 ```
- curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer | bash
+ sudo -s # Login as root if needed
+ source /dev/stdin <<< "$(curl https://github.com/Pamblam/browser-mirror/blob/master/installer)"
 ```
  4) Run `./bm-server` to output everything to the console as it runs **OR**
       - Run `nohup ./bm-server > logs.txt 2>&1 &` to run in background and output to the log file
@@ -86,4 +88,7 @@ in the client....
 
 ### TODO
 
+ - convenience wrapper
+ - man pages
+ - dmg and apt packaging?
  - Decent Real-world screencast gif to better explain what this does

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+SUBCOMMAND=$1 # should be server or client or --help
+OPERATIVE=$2 
+
+if [ "$SUBCOMMAND" = "server" ]; then
+  if [ "$OPERATIVE" = "start" ]; then
+    # bm server start
+    nohup $HERE/bm-server > logs.txt 2>&1 &
+  elif [ "$OPERATIVE" = "stop" ]; then
+    # bm server stop
+    killall bm-server
+  elif [ "$OPERATIVE" = "logs" ]; then
+    # bm server logs
+    cat $HERE/logs.txt
+  else
+    echo "unknown option: $OPERATIVE"
+    echo "try 'bm --help' for usage help."
+  fi
+elif [ "$SUBCOMMAND" = "client" ]; then
+  if [ "$OPERATIVE" = "install" ]; then
+    if [ ! -d $3 ]; then
+      echo "$3 is not a directory"
+    else
+      cat "$HERE/node_modules/browser-mirror/bm-client.js" > "$3/bm-client.js"
+    fi
+  fi
+elif [ "$SUBCOMMAND" = "--help" ]; then
+  echo "Report bugs to: https://github.com/Pamblam/browser-mirror/issues"
+  echo "pkg home page: https://github.com/Pamblam/browser-mirror"
+  echo "Usage: man bm"
+elif [ "$SUBCOMMAND" = "--version" ]; then
+  echo "1.0.8"
+else 
+  echo "unknown option: $SUBCOMMAND"
+  echo "try 'bm --help' for usage help."
+fi
