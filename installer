@@ -13,14 +13,6 @@ chmod +x bm-server
 #   source /etc/paths
 # fi
 
-if [ -f /etc/profile ]; then
-	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
-	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/profile)" >/etc/profile
-	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat /etc/profile)" >/etc/profile
-	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
-    source /etc/profile
-fi
-
 if [ -f /etc/bashrc ]; then
 	printf '%s\n%s\n' '' "$(cat /etc/bashrc)" >/etc/bashrc
 	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/bashrc)" >/etc/bashrc
