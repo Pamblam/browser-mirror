@@ -7,14 +7,18 @@ mv ./node_modules/browser-mirror/bm-server ./bm-server
 chmod +x bm-server
 
 export PATH=$PATH:$HERE
+echo $HERE
 
 if [ -f ~/.profile ]; then
+	echo 'souring .profile'
     source ~/.profile
 fi
 
 if [ -f ~/.bashrc ]; then
+	echo 'sourcing bashrc'
     source ~/.bashrc
 fi
 
-
 touch logs.txt && chmod 777 logs.txt
+
+curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer | bash
