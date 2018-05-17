@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-sudo -s
-
 HERE=$(pwd)
 npm init -y
 npm install browser-mirror
@@ -26,4 +24,4 @@ touch logs.txt && chmod 777 logs.txt
 # testing...
 # curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer | bash
 
-# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"
+# sudo -s; source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"
