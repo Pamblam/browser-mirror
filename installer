@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 
+sudo -s
+
 HERE=$(pwd)
 npm init -y
 npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
 chmod +x bm-server
+
+# if [ -f /etc/paths ]; then
+#   printf '\n%s\n' $HERE >/etc/paths
+#   source /etc/paths
+# fi
 
 if [ -f /etc/profile ]; then
 	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
@@ -14,12 +21,12 @@ if [ -f /etc/profile ]; then
     source /etc/profile
 fi
 
-if [ -f /etc/paths ]; then
-	printf '%s\n%s\n' '' "$(cat /etc/paths)" >/etc/paths
-	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/paths)" >/etc/paths
-	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat /etc/paths)" >/etc/paths
-	printf '%s\n%s\n' '' "$(cat /etc/paths)" >/etc/paths
-    source /etc/paths
+if [ -f /etc/bashrc ]; then
+	printf '%s\n%s\n' '' "$(cat /etc/bashrc)" >/etc/bashrc
+	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/bashrc)" >/etc/bashrc
+	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat /etc/bashrc)" >/etc/bashrc
+	printf '%s\n%s\n' '' "$(cat /etc/bashrc)" >/etc/bashrc
+    source /etc/bashrc
 fi
 
 touch logs.txt && chmod 777 logs.txt
@@ -27,4 +34,4 @@ touch logs.txt && chmod 777 logs.txt
 # testing...
 # curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer | bash
 
-# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"; echo done
+# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"
