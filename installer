@@ -6,8 +6,11 @@ npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
 chmod +x bm-server
 
-export PATH=$PATH:$HERE
+PATH=$PATH:$HERE
+export PATH
+
 echo $HERE
+echo $PATH
 
 if [ -f ~/.profile ]; then
 	echo 'souring .profile'
