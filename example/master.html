@@ -204,7 +204,7 @@
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			var startBtn = document.getElementById('start_session')
-			const mirror = BMClient(1, 'quigon.ourtownamerica.com', 'master', 1337);
+			const mirror = BMClient(1, '127.0.0.1', 'master', 1337);
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
@@ -254,7 +254,6 @@
 				div.innerHTML = '<br>&nbsp;&nbsp;<a href=# id="close"><b>x close</b></a><Br>'+("<div style='padding:1em;'>Sroll...</div>".repeat(50));
 				document.body.appendChild(div);
 				document.getElementById('close').addEventListener('click', function(e){
-					console.log();
 					e.preventDefault();
 					document.body.removeChild(div);
 				});

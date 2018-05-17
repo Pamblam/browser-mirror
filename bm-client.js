@@ -76,7 +76,7 @@ const BMClient = (function(){
 						}
 					}
 				}
-			}).observe(document.getElementsByTagName('body')[0], {childList: true});
+			}).observe(document.getElementsByTagName('body')[0], {childList: true, subtree: true});
 		}
 
 		/**
@@ -109,22 +109,12 @@ const BMClient = (function(){
 			return this;
 		}
 		
-		/**
-		 * run a custom function when custom state is changed
-		 * @param {function} state_change_cb
-		 * @returns {BMClient}
-		 */
 		onStateChange(state_change_cb){
 			if(this.role == 'master') return this;	
 			this.state_change_cb = state_change_cb;
 			return this;
 		}
 		
-		/**
-		 * Broadcast a custom state object
-		 * @param {object} state
-		 * @returns {BMClient}
-		 */
 		setState(state){
 			if(this.role !== 'master') return;
 			this.connection.send(JSON.stringify({
@@ -134,10 +124,6 @@ const BMClient = (function(){
 			return this;
 		}
 		
-		/**
-		 * Start the session and prevent further clients from joining
-		 * @returns {BMClient}
-		 */
 		start(){
 			if(this.role !== 'master') return;
 			this.connection.send(JSON.stringify({
@@ -198,21 +184,6 @@ const BMClient = (function(){
 	}
 	
 	/**
-	 * Turns the string ':nth-child(79)' into ':nth-child(80)'
-	 * this is needed for correcting a selector that is added after the mouse image on the slaves
-	 * @params {string} sel
-	 * @returns {string}
-	 */
-	function incrementSelector(sel){
-		var re = /^:nth-child\((\d+)\)$/;
-		if(!re.test(sel)) return sel;
-		var matches = sel.match(re);
-		if(!matches[1]) return sel;
-		var int = String(parseInt(matches[1])+1);
-		return sel.replace(matches[1], int);
-	}
-	
-	/**
 	 * 'private' method for initiating the session with the server
 	 * @returns {BMClient}
 	 */
@@ -256,26 +227,11 @@ const BMClient = (function(){
 		return this;
 	}
 	
-	/**
-	 * run a function on all existing elements now, and run it on new elements as they are added
-	 * @params {function} fn
-	 * @returns {BMClient}
-	 */
-	function _onAllElements(fn){
-		this.allElementsCBs.push(fn);
-		fn(document);
-		Array.from(document.querySelectorAll('*')).forEach(fn);
-		return this;
-	}
-	
-	/**
-	 * Give the slave browser it's cursor out
-	 * @returns {BMClient}
-	 */
 	function _giveSlaveCursorBack(){
 		if(this.cursor) this.cursor.style.display = 'none';
-		_onAllElements.call(this, function(ele){
-			if(ele !== document) ele.style.cursor = 'default';
+		document.body.style.cursor = 'default';
+		document.querySelectorAll('*').forEach(ele=>{
+			ele.style.cursor = 'default';
 		});
 		return this;
 	}
@@ -285,8 +241,9 @@ const BMClient = (function(){
 	 * @returns {BMClient}
 	 */
 	function _hideSlaveBrowserCursor(){
-		_onAllElements.call(this, function(ele){
-			if(ele !== document) ele.style.cursor = 'none';
+		document.body.style.cursor = 'none';
+		document.querySelectorAll('*').forEach(ele=>{
+			ele.style.cursor = 'none';
 		});
 		return this;
 	}
@@ -318,6 +275,7 @@ const BMClient = (function(){
 	function _monitorMasterBrowserState(){
 		if(this.role == 'slave') return this;
 		var self = this;
+		
 		_monitorMasterMouseCursor.call(self);
 		document.addEventListener('mousemove', function(e){
 			if(self.state != 'open') return;
@@ -325,31 +283,21 @@ const BMClient = (function(){
 			_broadcastMasterState.call(self);
 		});
 		
-		// Listen for scrolls	
-		_onAllElements.call(this, function(ele, isNew){
-			if(ele === document) return;
-			try{
-				let tgt = new CssSelectorGenerator().getSelector(ele);
-			}catch(e){
-				console.log(ele);
-				throw e;
-			}
-			if(isNew) tgt = incrementSelector(tgt);
+		_onAllElements.call(this, function(ele){
+			
+			if(!ele.parentElement) return;
+			var tgt = new CssSelectorGenerator().getSelector(ele);
+			
+			// scroll events
 			ele.addEventListener('scroll', function(e){
 				state.scroll.ele = tgt;
-				if(isNew) state.scroll.ele = incrementSelector(state.scroll.ele);
-				state.scroll.y = e.target.scrollTop || window.scrollY;
-				state.scroll.x = e.target.scrollLeft || window.scrollX;
+				state.scroll.y = ele.scrollTop || window.scrollY;
+				state.scroll.x = ele.scrollLeft || window.scrollX;
 				_broadcastMasterState.call(self);
 			});
-		});
-		
-		// Focus events
-		['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
-			_onAllElements.call(this, function(ele, isNew){
-				if(ele === document) return;
-				let tgt = new CssSelectorGenerator().getSelector(ele);
-				if(isNew) tgt = incrementSelector(tgt);
+			
+			// Focus events
+			['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
 					state.events.FocusEvent = {
 						target: tgt,
@@ -359,13 +307,9 @@ const BMClient = (function(){
 					delete state.events.FocusEvent;
 				});
 			});
-		});
-		
-		// Keyboard events
-		['keydown', 'keypress', 'keyup'].forEach(evtType=>{
-			_onAllElements.call(this, function(ele, isNew){
-				let tgt = new CssSelectorGenerator().getSelector(ele);
-				if(isNew) tgt = incrementSelector(tgt);
+			
+			// Keyboard events
+			['keydown', 'keypress', 'keyup'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
 					state.events.KeyboardEvent = {
 						target: tgt,
@@ -375,23 +319,16 @@ const BMClient = (function(){
 						ctrlKey: e.ctrlKey,
 						shiftKey: e.shiftKey,
 						metaKey: e.metaKey,
-						value: ~['TEXTAREA','INPUT'].indexOf(e.target.tagName)?e.target.value:false
+						value: ~['TEXTAREA','INPUT'].indexOf(ele.tagName||'BODY')?ele.value:false
 					};
 					_broadcastMasterState.call(self);
 					delete state.events.KeyboardEvent;
 				});
 			});
-		});
-		
-		// Mouse events
-		['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
-			_onAllElements.call(this, function(ele, isNew){
-				let tgt = new CssSelectorGenerator().getSelector(ele);
-				if(isNew) tgt = incrementSelector(tgt);
+			
+			// Mouse events
+			['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
-					if('click' === evtType){
-						console.log('clicked', tgt);
-					}
 					state.events.MouseEvent = {
 						target: tgt,
 						type: evtType
@@ -425,11 +362,8 @@ const BMClient = (function(){
 		if(!state.scroll.ele){
 			window.scrollTo(state.scroll.x, state.scroll.y);
 		}else{
-			var scrollEle = document.querySelector(state.scroll.ele);
-			if(scrollEle){
-				document.querySelector(state.scroll.ele).scrollLeft = state.scroll.x;
-				document.querySelector(state.scroll.ele).scrollTop = state.scroll.y;
-			}
+			document.querySelector(state.scroll.ele).scrollLeft = state.scroll.x;
+			document.querySelector(state.scroll.ele).scrollTop = state.scroll.y;
 		}
 		
 		if(state.events){
@@ -469,9 +403,7 @@ const BMClient = (function(){
 						});
 						break;
 				}
-				if(type === 'click'){
-					console.log('recieved click on', target);
-				}
+				
 				tgt.dispatchEvent(evt);
 				delete state.events[evtConstructor];
 			}
@@ -491,6 +423,18 @@ const BMClient = (function(){
 		return this;
 	}
 	
+	/**
+	 * run a function on all existing elements now, and run it on new elements as they are added
+	 * @params {function} fn
+	 * @returns {BMClient}
+	 */
+	function _onAllElements(fn){
+		this.allElementsCBs.push(fn);
+		fn(document);
+		Array.from(document.querySelectorAll('*')).forEach(fn);
+		return this;
+	}
+
 	return function(sessionid, url, role='master', port=1337){
 		return new BMClient(sessionid, url, role, port);
 	};
