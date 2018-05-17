@@ -11,7 +11,7 @@ chmod +x bm
 if [ -d /usr/local/share/man/man1/ ]; then
 	cp ./node_modules/browser-mirror/bm.1 /usr/local/share/man/man1/
     gzip /usr/local/share/man/man1/bm.1
-elif [ -d /usr/share/man/man1 ]
+elif [ -d /usr/share/man/man1 ]; then
     cp ./node_modules/browser-mirror/bm.1 /usr/share/man/man1
     gzip /usr/share/man/man1/bm.1
 fi
