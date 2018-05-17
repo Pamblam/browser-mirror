@@ -28,9 +28,17 @@ if [ -f ~/.bashrc ]; then
     source ~/.bashrc
 fi
 
+if [ -f ~/.bash_profile ]; then
+	printf '%s\n%s\n' '' "$(cat ~/.bash_profile)" >~/.bash_profile
+	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat ~/.bash_profile)" >~/.bash_profile
+	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat ~/.bash_profile)" >~/.bash_profile
+	printf '%s\n%s\n' '' "$(cat ~/.bash_profile)" >~/.bash_profile
+    source ~/.bash_profile
+fi
+
 touch logs.txt && chmod 777 logs.txt
 
 # testing...
 # curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer | bash
 
-# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"; echo done
+# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer?asd)"; echo done
