@@ -9,33 +9,42 @@ if [ "$SUBCOMMAND" = "server" ]; then
   if [ "$OPERATIVE" = "start" ]; then
     # bm server start
     nohup $HERE/bm-server > logs.txt 2>&1 &
+    echo "  BM Server running"
   elif [ "$OPERATIVE" = "stop" ]; then
     # bm server stop
     killall bm-server
+    echo "  BM Server stopped"
   elif [ "$OPERATIVE" = "logs" ]; then
     # bm server logs
     cat $HERE/logs.txt
   else
-    echo "unknown option: $OPERATIVE"
-    echo "try 'bm --help' for usage help."
+    echo "  unknown option: $OPERATIVE"
+    echo "  try 'bm --help' for usage help."
   fi
 elif [ "$SUBCOMMAND" = "client" ]; then
   if [ "$OPERATIVE" = "install" ]; then
+    # bm install client /path/to/install/to
     if [ ! -d $3 ]; then
-      echo "$3 is not a directory"
+      echo "  $3 is not a directory"
     else
       cat "$HERE/node_modules/browser-mirror/bm-client.js" > "$3/bm-client.js"
+      echo "  Installed bm-client.js to $3/bm-client.js"
     fi
+  else
+    echo "  unknown option: $OPERATIVE"
+    echo "  try 'bm --help' for usage help."
   fi
 elif [ "$SUBCOMMAND" = "--help" ]; then
-  echo "Report bugs to: https://github.com/Pamblam/browser-mirror/issues"
-  echo "pkg home page: https://github.com/Pamblam/browser-mirror"
-  echo "Usage: man bm"
-elif [ "$SUBCOMMAND" = "--version" ]; then
-  echo "1.0.8"
+  # bm --help
+  echo "  Report bugs to: https://github.com/Pamblam/browser-mirror/issues"
+  echo "  pkg home page: https://github.com/Pamblam/browser-mirror"
+  echo "  Usage: man bm"
+elif [ " $SUBCOMMAND" = "--version" ]; then
+  # bm --version
+  echo "  1.1.0"
 else 
-  echo "unknown option: $SUBCOMMAND"
-  echo "try 'bm --help' for usage help."
+  echo "  unknown option: $SUBCOMMAND"
+  echo "  try 'bm --help' or 'man bm' for usage help."
 fi
 
-# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"
+# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer?1r2)"

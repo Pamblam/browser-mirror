@@ -88,7 +88,5 @@ in the client....
 
 ### TODO
 
- - convenience wrapper
- - man pages
- - dmg and apt packaging?
- - Decent Real-world screencast gif to better explain what this does
+ - grunt to simplify build process?
+ - screencast gif (demo) for readme page
