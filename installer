@@ -13,12 +13,18 @@ echo $HERE
 echo $PATH
 
 if [ -f ~/.profile ]; then
-	echo 'souring .profile'
+	printf '%s\n%s\n' '' "$(cat ~/.profile)" >~/.profile
+	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat ~/.profile)" >~/.profile
+	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat ~/.profile)" >~/.profile
+	printf '%s\n%s\n' '' "$(cat ~/.profile)" >~/.profile
     source ~/.profile
 fi
 
 if [ -f ~/.bashrc ]; then
-	echo 'sourcing bashrc'
+	printf '%s\n%s\n' '' "$(cat ~/.bashrc)" >~/.bashrc
+	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat ~/.bashrc)" >~/.bashrc
+	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat ~/.bashrc)" >~/.bashrc
+	printf '%s\n%s\n' '' "$(cat ~/.bashrc)" >~/.bashrc
     source ~/.bashrc
 fi
 
@@ -26,3 +32,5 @@ touch logs.txt && chmod 777 logs.txt
 
 # testing...
 # curl -L https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer | bash
+
+# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"; echo done
