@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
+HERE=$(pwd)
 npm init -y
 npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
 chmod +x bm-server
+
+export PATH=$PATH:$HERE
+
+if [ -f ~/.profile ]; then
+    source ~/.profile
+fi
+
+if [ -f ~/.bashrc ]; then
+    source ~/.bashrc
+fi
+
+
 touch logs.txt && chmod 777 logs.txt

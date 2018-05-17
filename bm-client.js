@@ -285,7 +285,7 @@ const BMClient = (function(){
 		
 		_onAllElements.call(this, function(ele){
 			
-			if(!ele.parentElement) return;
+			if(document !== ele && !ele.parentElement) return;
 			var tgt = new CssSelectorGenerator().getSelector(ele);
 			
 			// scroll events
@@ -359,7 +359,7 @@ const BMClient = (function(){
 		else if(state.cursor.type === 'text') this.cursor.src = textCursor;
 		else this.cursor.src = defaultCursor;
 		
-		if(!state.scroll.ele){
+		if(!state.scroll.ele || !document.querySelector(state.scroll.ele)){
 			window.scrollTo(state.scroll.x, state.scroll.y);
 		}else{
 			document.querySelector(state.scroll.ele).scrollLeft = state.scroll.x;
