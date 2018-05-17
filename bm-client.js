@@ -63,6 +63,20 @@ const BMClient = (function(){
 			this.connection = null;
 			this.state = 'pending';
 			this.cursor = null;
+			this.allElementsCBs = [];
+			new MutationObserver(mutationsList=>{
+				for (var mutation of mutationsList) {
+					if (mutation.type == 'childList') {
+						for (var i = mutation.addedNodes.length; i--; ){
+							if(1 != mutation.addedNodes[i].nodeType) continue;
+							let els = [mutation.addedNodes[i], ...Array.from(mutation.addedNodes[i].querySelectorAll('*'))];
+							for(let n=els.length; n--;){
+								this.allElementsCBs.forEach(fn=>fn(els[n], true));
+							}
+						}
+					}
+				}
+			}).observe(document.getElementsByTagName('body')[0], {childList: true, subtree: true});
 		}
 
 		/**
@@ -261,6 +275,7 @@ const BMClient = (function(){
 	function _monitorMasterBrowserState(){
 		if(this.role == 'slave') return this;
 		var self = this;
+		
 		_monitorMasterMouseCursor.call(self);
 		document.addEventListener('mousemove', function(e){
 			if(self.state != 'open') return;
@@ -268,55 +283,59 @@ const BMClient = (function(){
 			_broadcastMasterState.call(self);
 		});
 		
-		// Listen for scrolls
-		[document, ...Array.from(document.querySelectorAll('*'))].forEach(ele=>{
+		_onAllElements.call(this, function(ele){
+			
+			if(document !== ele && !ele.parentElement) return;
+			var tgt = new CssSelectorGenerator().getSelector(ele);
+			
+			// scroll events
 			ele.addEventListener('scroll', function(e){
-				state.scroll.ele = new CssSelectorGenerator().getSelector(e.target);
-				state.scroll.y = e.target.scrollTop || window.scrollY;
-				state.scroll.x = e.target.scrollLeft || window.scrollX;
+				state.scroll.ele = tgt;
+				state.scroll.y = ele.scrollTop || window.scrollY;
+				state.scroll.x = ele.scrollLeft || window.scrollX;
 				_broadcastMasterState.call(self);
 			});
-		});
-		
-		// Focus events
-		['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
-			document.addEventListener(evtType, function(e){
-				state.events.FocusEvent = {
-					target: new CssSelectorGenerator().getSelector(e.target),
-					type: evtType
-				};
-				_broadcastMasterState.call(self);
-				delete state.events.FocusEvent;
+			
+			// Focus events
+			['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
+				ele.addEventListener(evtType, function(e){
+					state.events.FocusEvent = {
+						target: tgt,
+						type: evtType
+					};
+					_broadcastMasterState.call(self);
+					delete state.events.FocusEvent;
+				});
 			});
-		});
-		
-		// Keyboard events
-		['keydown', 'keypress', 'keyup'].forEach(evtType=>{
-			document.addEventListener(evtType, function(e){
-				state.events.KeyboardEvent = {
-					target: new CssSelectorGenerator().getSelector(e.target),
-					type: evtType,
-					key: e.key,
-					altKey: e.altKey,
-					ctrlKey: e.ctrlKey,
-					shiftKey: e.shiftKey,
-					metaKey: e.metaKey,
-					value: ~['TEXTAREA','INPUT'].indexOf(e.target.tagName)?e.target.value:false
-				};
-				_broadcastMasterState.call(self);
-				delete state.events.KeyboardEvent;
+			
+			// Keyboard events
+			['keydown', 'keypress', 'keyup'].forEach(evtType=>{
+				ele.addEventListener(evtType, function(e){
+					state.events.KeyboardEvent = {
+						target: tgt,
+						type: evtType,
+						key: e.key,
+						altKey: e.altKey,
+						ctrlKey: e.ctrlKey,
+						shiftKey: e.shiftKey,
+						metaKey: e.metaKey,
+						value: ~['TEXTAREA','INPUT'].indexOf(ele.tagName||'BODY')?ele.value:false
+					};
+					_broadcastMasterState.call(self);
+					delete state.events.KeyboardEvent;
+				});
 			});
-		});
-		
-		// Mouse events
-		['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
-			document.addEventListener(evtType, function(e){
-				state.events.MouseEvent = {
-					target: new CssSelectorGenerator().getSelector(e.target),
-					type: evtType
-				};
-				_broadcastMasterState.call(self);
-				delete state.events.MouseEvent;
+			
+			// Mouse events
+			['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
+				ele.addEventListener(evtType, function(e){
+					state.events.MouseEvent = {
+						target: tgt,
+						type: evtType
+					};
+					_broadcastMasterState.call(self);
+					delete state.events.MouseEvent;
+				});
 			});
 		});
 		
@@ -340,7 +359,7 @@ const BMClient = (function(){
 		else if(state.cursor.type === 'text') this.cursor.src = textCursor;
 		else this.cursor.src = defaultCursor;
 		
-		if(!state.scroll.ele){
+		if(!state.scroll.ele || !document.querySelector(state.scroll.ele)){
 			window.scrollTo(state.scroll.x, state.scroll.y);
 		}else{
 			document.querySelector(state.scroll.ele).scrollLeft = state.scroll.x;
@@ -404,6 +423,18 @@ const BMClient = (function(){
 		return this;
 	}
 	
+	/**
+	 * run a function on all existing elements now, and run it on new elements as they are added
+	 * @params {function} fn
+	 * @returns {BMClient}
+	 */
+	function _onAllElements(fn){
+		this.allElementsCBs.push(fn);
+		fn(document);
+		Array.from(document.querySelectorAll('*')).forEach(fn);
+		return this;
+	}
+
 	return function(sessionid, url, role='master', port=1337){
 		return new BMClient(sessionid, url, role, port);
 	};

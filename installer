@@ -1,7 +1,31 @@
 #!/usr/bin/env bash
 
+HERE=$(pwd)
 npm init -y
 npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
+mv ./node_modules/browser-mirror/bm ./bm
 chmod +x bm-server
+chmod +x bm
+
+if [ -d /usr/local/share/man/man1/ ]; then
+	cp ./node_modules/browser-mirror/bm.1 /usr/local/share/man/man1/
+    gzip /usr/local/share/man/man1/bm.1
+elif [ -d /usr/share/man/man1 ]
+    cp ./node_modules/browser-mirror/bm.1 /usr/share/man/man1
+    gzip /usr/share/man/man1/bm.1
+fi
+
+if [ -x "$(command -v mandb)" ]; then
+  mandb
+fi
+
+if [ -f /etc/profile ]; then
+	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
+	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/profile)" >/etc/profile
+	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat /etc/profile)" >/etc/profile
+	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
+	source /etc/profile
+fi
+
 touch logs.txt && chmod 777 logs.txt

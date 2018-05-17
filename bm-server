@@ -120,6 +120,7 @@ wsServer.on('request', function (request) {
 	});
 	
 	connection.on('close', function(connection){
+		if(!session) return;
 		if(role == 'slave'){
 			session.slaves[index] = null;
 			broadcastSessionUpdate('Member has left session.');
