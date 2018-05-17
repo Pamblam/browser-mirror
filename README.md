@@ -29,7 +29,7 @@ mkdir bm-server && cd bm-server
  3) Login as root (if you need to), and run the installer 
 ```
  sudo -s # Login as root if needed
- source /dev/stdin <<< "$(curl https://github.com/Pamblam/browser-mirror/blob/master/installer)"
+ source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
 ```
  4) Run `bm server start` to start the websocket server
  5) Run `bm server stop` to stop the server
