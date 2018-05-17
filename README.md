@@ -41,7 +41,7 @@ mkdir bm-server && cd bm-server
   
  Add the client side JS file to your project, either by running `bm client install /path/to/project` or download it manually from the [git repo](https://raw.githubusercontent.com/Pamblam/browser-mirror/master/bm-client.js), then put in a script tag.
 
-    <script src='bm-client.js'>
+    <script src='bm-client.js'></script>
 
 The master page will control all the "slave" pages.
 
