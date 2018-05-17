@@ -37,3 +37,5 @@ else
   echo "unknown option: $SUBCOMMAND"
   echo "try 'bm --help' for usage help."
 fi
+
+# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer)"
