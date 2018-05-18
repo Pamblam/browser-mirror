@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
+PWD=$(pwd)
 SUBCOMMAND=$1 # should be server or client or --help
 OPERATIVE=$2 
 
@@ -51,7 +51,9 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
     [ -x "$(command -v mandb)" ] && mandb
     rm -rf $HERE/*
     killall bm-server
+    cd $HERE
     source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
+    cd $PWD
   fi
 elif [ "$SUBCOMMAND" = "server" ]; then
   if [ "$OPERATIVE" = "start" ]; then
