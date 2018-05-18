@@ -5,18 +5,69 @@ HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SUBCOMMAND=$1 # should be server or client or --help
 OPERATIVE=$2 
 
-if [ "$SUBCOMMAND" = "server" ]; then
+if [ "$SUBCOMMAND" = "uninstall" ]; then
+  # bm uninstall
+  [ -f /etc/profile ] && sed -n '/bm-server/!p' /etc/profile
+  [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
+  [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
+  [ -f "/usr/share/man/man1/bm.1" ] && rm -rf /usr/share/man/man1/bm.1
+  [ -f "/usr/share/man/man1/bm.1.gz" ] && rm -rf /usr/share/man/man1/bm.1.gz
+  [ -x "$(command -v mandb)" ] && mandb
+  rm -rf $HERE/*
+  killall bm-server
+elif [ "$SUBCOMMAND" = "update" ]; then
+  # bm update
+  CURR_PACKAGE_VERSION=$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g' \
+    | tr -d '[[:space:]]')
+  THIS_PACKAGE_VERSION=$(cat $HERE/node_modules/browser-mirror/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g' \
+    | tr -d '[[:space:]]')
+  LATEST_VERSION=$(echo  "$THIS_PACKAGE_VERSION
+$CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
+  if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
+    echo "  Browser-Mirror is up to date."
+  else
+    [ -f /etc/profile ] && sed -n '/bm-server/!p' /etc/profile
+    [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
+    [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
+    [ -f "/usr/share/man/man1/bm.1" ] && rm -rf /usr/share/man/man1/bm.1
+    [ -f "/usr/share/man/man1/bm.1.gz" ] && rm -rf /usr/share/man/man1/bm.1.gz
+    [ -x "$(command -v mandb)" ] && mandb
+    rm -rf $HERE/*
+    killall bm-server
+    source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
+  fi
+elif [ "$SUBCOMMAND" = "server" ]; then
   if [ "$OPERATIVE" = "start" ]; then
     # bm server start
-    nohup $HERE/bm-server > logs.txt 2>&1 &
-    echo "  BM Server running"
+    if [ -f "$HERE/running.lock" ]; then
+      echo "  BM Server is already running"
+    else 
+      nohup $HERE/bm-server > logs.txt 2>&1 &
+      touch $HERE/running.lock
+      echo "  BM Server running"
+    fi
   elif [ "$OPERATIVE" = "stop" ]; then
     # bm server stop
     killall bm-server
+    rm -rf $HERE/running.lock
     echo "  BM Server stopped"
   elif [ "$OPERATIVE" = "logs" ]; then
     # bm server logs
     cat $HERE/logs.txt
+  elif [ "$OPERATIVE" = "status" ]; then
+	if [ -f "$HERE/running.lock" ]; then
+        echo "  BM Server is running"
+    else
+        echo "  BM Server is not running"
+    fi
   else
     echo "  unknown option: $OPERATIVE"
     echo "  try 'bm --help' for usage help."
@@ -41,10 +92,8 @@ elif [ "$SUBCOMMAND" = "--help" ]; then
   echo "  Usage: man bm"
 elif [ " $SUBCOMMAND" = "--version" ]; then
   # bm --version
-  echo "  1.1.2"
+  echo "  v1.1.4"
 else 
   echo "  unknown option: $SUBCOMMAND"
   echo "  try 'bm --help' or 'man bm' for usage help."
 fi
-
-# source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/dynamically-created-elements/installer?1r2)"

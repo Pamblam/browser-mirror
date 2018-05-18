@@ -290,6 +290,7 @@ const BMClient = (function(){
 			
 			// scroll events
 			ele.addEventListener('scroll', function(e){
+				if(e.target !== ele) return;
 				state.scroll.ele = tgt;
 				state.scroll.y = ele.scrollTop || window.scrollY;
 				state.scroll.x = ele.scrollLeft || window.scrollX;
@@ -299,6 +300,7 @@ const BMClient = (function(){
 			// Focus events
 			['focus', 'blur', 'focusin', 'focusout'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
+					if(e.target !== ele) return;
 					state.events.FocusEvent = {
 						target: tgt,
 						type: evtType
@@ -311,6 +313,7 @@ const BMClient = (function(){
 			// Keyboard events
 			['keydown', 'keypress', 'keyup'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
+					if(e.target !== ele) return;
 					state.events.KeyboardEvent = {
 						target: tgt,
 						type: evtType,
@@ -329,6 +332,7 @@ const BMClient = (function(){
 			// Mouse events
 			['click', 'dblclick', 'mouseup', 'mousedown'].forEach(evtType=>{
 				ele.addEventListener(evtType, function(e){
+					if(e.target !== ele) return;
 					state.events.MouseEvent = {
 						target: tgt,
 						type: evtType
@@ -403,7 +407,6 @@ const BMClient = (function(){
 						});
 						break;
 				}
-				
 				tgt.dispatchEvent(evt);
 				delete state.events[evtConstructor];
 			}
@@ -435,7 +438,9 @@ const BMClient = (function(){
 		return this;
 	}
 
-	return function(sessionid, url, role='master', port=1337){
+	const f = function(sessionid, url, role='master', port=1337){
 		return new BMClient(sessionid, url, role, port);
 	};
+	f.getSelector = ele=>new CssSelectorGenerator().getSelector(ele);
+	return f;
 })();

@@ -1,13 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Start the server:
- *   cd /path/to/bm-server
- *   ./bm-server > /dev/null 2>&1 &
- * Kill server
- *    killall bm-server
- */
-
 process.title = 'bm-server';
 var webSocketServer = require('websocket').server;
 var http = require('http');

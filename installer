@@ -5,7 +5,9 @@ npm init -y
 npm install browser-mirror
 mv ./node_modules/browser-mirror/bm-server ./bm-server
 mv ./node_modules/browser-mirror/bm ./bm
+mv ./node_modules/browser-mirror/uninstaller ./uninstaller
 chmod +x bm-server
+chmod +x uninstaller
 chmod +x bm
 
 if [ -d /usr/local/share/man/man1/ ]; then
@@ -16,9 +18,7 @@ elif [ -d /usr/share/man/man1 ]; then
     gzip /usr/share/man/man1/bm.1
 fi
 
-if [ -x "$(command -v mandb)" ]; then
-  mandb
-fi
+[ -x "$(command -v mandb)" ] && mandb
 
 if [ -f /etc/profile ]; then
 	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
