@@ -1,24 +1,27 @@
 {
   "name": "browser-mirror",
-  "version": "1.1.6",
-  "description": "mirror a site remotely",
-  "main": "mirror.js",
+  "version": "1.1.7",
+  "description": "Lets a user open a webpae on one browser and control that webpage in other browsers, on other computers as a light-weight alternative to screensharing.",
+  "main": "bm-client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Pamblam/web-mirror.git"
+    "url": "git+https://github.com/Pamblam/browser-mirror.git"
   },
   "keywords": [
-    "mirror"
+    "mirror",
+    "browser",
+    "websockets",
+    "screen sharing"
   ],
   "author": "pamblam",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Pamblam/web-mirror/issues"
+    "url": "https://github.com/Pamblam/browser-mirror/issues"
   },
-  "homepage": "https://github.com/Pamblam/web-mirror#readme",
+  "homepage": "https://github.com/Pamblam/browser-mirror#readme",
   "dependencies": {
     "websocket": "^1.0.26"
   },

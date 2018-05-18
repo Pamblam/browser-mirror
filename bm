@@ -103,7 +103,7 @@ elif [ "$SUBCOMMAND" = "--help" ]; then
   echo "  Usage: man bm"
 elif [ " $SUBCOMMAND" = "--version" ]; then
   # bm --version
-  echo "  v1.1.6"
+  echo "  v1.1.7"
 else 
   echo "  unknown option: $SUBCOMMAND"
   echo "  try 'bm --help' or 'man bm' for usage help."
