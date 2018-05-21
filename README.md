@@ -4,7 +4,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.11</h1>
+<h1 align="center">Browser-Mirror v1.1.12</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -28,10 +28,10 @@ mkdir bm-server && cd bm-server
 ```
  3) Login as root (if you need to), and run the installer 
 ```
- sudo -s # Login as root if needed
- source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
+sudo -s # Login as root if needed
+source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
 ```
- 4) Run `bm server start` to start the websocket server
+ 4) Run `bm server start` to start the websocket server. You can give it a port number if you want it to run a port other than 1337 (eg, `bm server start 1223`)
  5) Run `bm server stop` to stop the server
  6) Run `bm server logs` to view the server logs
  
@@ -47,14 +47,14 @@ The master page will control all the "slave" pages.
 
 ##### Set up the constructor.
 
-    const mirror = BMClient(1, '127.0.0.1', 'master', 1337); 
+    const mirror = BMClient(1, '127.0.0.1', 'master'); 
 
 The parameters are..
 
  1. Any developer specified session identifier. Can be a number or a string.
  2. The host where the server is installed.
  3. 'master' or 'slave' - there can only be one master per session, but unlimited slaves.
- 4. The port the server is running on. It defaults to 1337.
+ 4. If using a port other than 1337, pass it in as the 4th argument.
 
 ##### Listen for errors
 
