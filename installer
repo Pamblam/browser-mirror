@@ -8,6 +8,7 @@ fi
 
 HERE=$(pwd)
 
+clear
 echo "Installing Browser-Mirror";
 
 echo -ne '#####                     (33%) Initiating directory\r'
@@ -40,10 +41,7 @@ fi
 echo -ne '######################    (90%) Setting PATH\r'
 sleep .1
 if [ -f /etc/profile ]; then
-	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
 	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/profile)" >/etc/profile
-	printf '%s\n%s\n' '# Add bm-server to $PATH' "$(cat /etc/profile)" >/etc/profile
-	printf '%s\n%s\n' '' "$(cat /etc/profile)" >/etc/profile
 	source /etc/profile
 fi
 
@@ -52,4 +50,5 @@ sleep .1
 touch logs.txt && chmod 777 logs.txt
 
 echo -ne '######################### (100%) Done'
+echo ""
 

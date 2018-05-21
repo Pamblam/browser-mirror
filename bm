@@ -52,7 +52,6 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
   if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
     echo "  Browser-Mirror is up to date."
   else
-    [ -f /etc/profile ] && sed -n '/bm-server/!p' /etc/profile
     [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile
     [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
     [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
@@ -184,7 +183,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.1.12"
+  echo "  v1.1.13"
 
 else 
 
