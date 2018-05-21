@@ -12,7 +12,7 @@ if [ "$SUBCOMMAND" = "uninstall" ]; then
   ##############################################################################
 
   if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root" 
+    echo "  This script must be run as root" 
     exit 1
   fi
   [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile
@@ -31,7 +31,7 @@ elif [ "$SUBCOMMAND" = "update" ]; then
   ##############################################################################
 
   if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root" 
+    echo "  This script must be run as root" 
     exit 1
   fi
   cd $HERE
@@ -52,14 +52,14 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
   if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
     echo "  Browser-Mirror is up to date."
   else
-    [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile
+    [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile > /dev/null 2>&1
     [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
     [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
     [ -f "/usr/share/man/man1/bm.1" ] && rm -rf /usr/share/man/man1/bm.1
     [ -f "/usr/share/man/man1/bm.1.gz" ] && rm -rf /usr/share/man/man1/bm.1.gz
-    [ -x "$(command -v mandb)" ] && mandb
+    [ -x "$(command -v mandb)" ] && mandb > /dev/null 2>&1
     rm -rf $HERE/*
-    killall bm-server
+    killall bm-server > /dev/null 2>&1
     source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
     cd $PWD
   fi
@@ -83,7 +83,7 @@ elif [ "$SUBCOMMAND" = "server" ]; then
       fi
       # Make sure the port number is a number
       if [[ -n ${PORT//[0-9]/} ]]; then
-        echo "Invalid port number: $PORT"
+        echo "  Invalid port number: $PORT"
         exit 1
       fi
       # Get a list of in-use ports and check to see if our port is listed
@@ -93,7 +93,7 @@ elif [ "$SUBCOMMAND" = "server" ]; then
       done
       # exit if port is in use
       if [ "$SAFE_PORT" = 0 ]; then
-        echo "PORT $PORT is in use"
+        echo "  PORT $PORT is in use"
         exit 1;
       fi
       # Server is not running, port is good, start it up
@@ -183,7 +183,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.1.13"
+  echo "  v1.1.14"
 
 else 
 

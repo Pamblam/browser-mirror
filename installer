@@ -11,7 +11,7 @@ HERE=$(pwd)
 clear
 echo "Installing Browser-Mirror";
 
-echo -ne '#####                     (33%) Initiating directory\r'
+echo -ne '#####                     (33%) Initiating directory    \r'
 sleep .1
 npm init -y &>/dev/null
 
@@ -19,14 +19,14 @@ echo -ne '#############             (66%) Downloading dependencies\r'
 sleep .1
 npm install browser-mirror &>/dev/null
 
-echo -ne '##################        (75%) Installing\r'
+echo -ne '##################        (75%) Installing              \r'
 sleep .1
 mv ./node_modules/browser-mirror/bm-server ./bm-server 
 mv ./node_modules/browser-mirror/bm ./bm
 chmod +x bm-server
 chmod +x bm
 
-echo -ne '#####################     (80%) Installing manual\r'
+echo -ne '#####################     (80%) Installing manual       \r'
 sleep .1
 if [ -d /usr/local/share/man/man1/ ]; then
 	cp ./node_modules/browser-mirror/bm.1 /usr/local/share/man/man1/
@@ -38,17 +38,16 @@ fi
 
 [ -x "$(command -v mandb)" ] && mandb &>/dev/null
 
-echo -ne '######################    (90%) Setting PATH\r'
+echo -ne '######################    (90%) Setting PATH            \r'
 sleep .1
 if [ -f /etc/profile ]; then
 	printf '%s%s%s\n%s\n' 'export PATH="$PATH:' $HERE '"' "$(cat /etc/profile)" >/etc/profile
 	source /etc/profile
 fi
 
-echo -ne '########################  (95%) Creating logs\r'
+echo -ne '########################  (95%) Creating logs           \r'
 sleep .1
 touch logs.txt && chmod 777 logs.txt
 
-echo -ne '######################### (100%) Done'
-echo ""
+echo -ne '######################### (100%) Done                   \n'
 
