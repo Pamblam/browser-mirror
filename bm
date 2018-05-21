@@ -2,7 +2,7 @@
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PWD=$(pwd)
-SUBCOMMAND=$1 # should be server or client or --help
+SUBCOMMAND=$1
 OPERATIVE=$2 
 
 if [ "$SUBCOMMAND" = "uninstall" ]; then
@@ -34,7 +34,8 @@ elif [ "$SUBCOMMAND" = "update" ]; then
     echo "This script must be run as root" 
     exit 1
   fi
-  CURR_PACKAGE_VERSION=$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
+  cd $HERE
+  CURR_PACKAGE_VERSION=$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
     | grep version \
     | head -1 \
     | awk -F: '{ print $2 }' \
@@ -60,8 +61,7 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
     [ -x "$(command -v mandb)" ] && mandb
     rm -rf $HERE/*
     killall bm-server
-    cd $HERE
-    source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
+    source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
     cd $PWD
   fi
 
@@ -70,15 +70,37 @@ elif [ "$SUBCOMMAND" = "server" ]; then
   if [ "$OPERATIVE" = "start" ]; then
 
     ############################################################################
-    ############################## bm server start #############################
+    ####################### bm server start [portnumber] #######################
     ############################################################################
 
     if [ -f "$HERE/running.lock" ]; then
       echo "  BM Server is already running"
     else 
-      nohup $HERE/bm-server > logs.txt 2>&1 &
+
+      PORT=$3
+      # Default port to 1337 if one isn't supplied
+      if [ -z "$PORT" ]; then
+        PORT=1337 
+      fi
+      # Make sure the port number is a number
+      if [[ -n ${PORT//[0-9]/} ]]; then
+        echo "Invalid port number: $PORT"
+        exit 1
+      fi
+      # Get a list of in-use ports and check to see if our port is listed
+      SAFE_PORT=1
+      for p in $(netstat -ant | sed -e '/^tcp/ !d' -e 's/^[^ ]* *[^ ]* *[^ ]* *.*[\.:]\([0-9]*\) .*$/\1/' | sort -g | uniq); 
+        do [ "$p" = "$PORT" ] && SAFE_PORT=0; 
+      done
+      # exit if port is in use
+      if [ "$SAFE_PORT" = 0 ]; then
+        echo "PORT $PORT is in use"
+        exit 1;
+      fi
+      # Server is not running, port is good, start it up
+      nohup $HERE/bm-server $PORT > $HERE/logs.txt 2>&1 &
       touch $HERE/running.lock
-      echo "  BM Server running"
+      echo "  BM Server running on port $PORT"
     fi
 
   elif [ "$OPERATIVE" = "stop" ]; then
@@ -105,7 +127,7 @@ elif [ "$SUBCOMMAND" = "server" ]; then
     ############################# bm server status #############################
     ############################################################################
 
-	if [ -f "$HERE/running.lock" ]; then
+  if [ -f "$HERE/running.lock" ]; then
         echo "  BM Server is running"
     else
         echo "  BM Server is not running"
@@ -162,7 +184,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.1.9"
+  echo "  v1.1.11"
 
 else 
 
