@@ -4,7 +4,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.7</h1>
+<h1 align="center">Browser-Mirror v1.1.9</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -37,7 +37,7 @@ mkdir bm-server && cd bm-server
  
  Run `man bm` or `bm --help` for further uses & info.
  
- #### Implement it
+#### Implement it
   
  Add the client side JS file to your project, either by running `bm client install /path/to/project` or download it manually from the [git repo](https://raw.githubusercontent.com/Pamblam/browser-mirror/master/bm-client.js), then put in a script tag.
 
@@ -95,5 +95,4 @@ in the client....
 
 ### TODO
 
- - grunt to simplify build process?
  - screencast gif (demo) for readme page

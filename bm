@@ -6,7 +6,11 @@ SUBCOMMAND=$1 # should be server or client or --help
 OPERATIVE=$2 
 
 if [ "$SUBCOMMAND" = "uninstall" ]; then
-  # bm uninstall
+
+  ##############################################################################
+  ################################ bm uninstall ################################
+  ##############################################################################
+
   if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root" 
     exit 1
@@ -19,8 +23,13 @@ if [ "$SUBCOMMAND" = "uninstall" ]; then
   [ -x "$(command -v mandb)" ] && mandb
   rm -rf $HERE/*
   killall bm-server
+
 elif [ "$SUBCOMMAND" = "update" ]; then
-  # bm update
+
+  ##############################################################################
+  ################################## bm update #################################
+  ##############################################################################
+
   if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root" 
     exit 1
@@ -55,9 +64,15 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
     source /dev/stdin <<< "$(curl https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
     cd $PWD
   fi
+
 elif [ "$SUBCOMMAND" = "server" ]; then
+
   if [ "$OPERATIVE" = "start" ]; then
-    # bm server start
+
+    ############################################################################
+    ############################## bm server start #############################
+    ############################################################################
+
     if [ -f "$HERE/running.lock" ]; then
       echo "  BM Server is already running"
     else 
@@ -65,46 +80,97 @@ elif [ "$SUBCOMMAND" = "server" ]; then
       touch $HERE/running.lock
       echo "  BM Server running"
     fi
+
   elif [ "$OPERATIVE" = "stop" ]; then
-    # bm server stop
+
+    ############################################################################
+    ############################## bm server stop ##############################
+    ############################################################################
+
     killall bm-server
     rm -rf $HERE/running.lock
     echo "  BM Server stopped"
+
   elif [ "$OPERATIVE" = "logs" ]; then
-    # bm server logs
+    
+    ############################################################################
+    ############################## bm server logs ##############################
+    ############################################################################
+
     cat $HERE/logs.txt
+
   elif [ "$OPERATIVE" = "status" ]; then
+    
+    ############################################################################
+    ############################# bm server status #############################
+    ############################################################################
+
 	if [ -f "$HERE/running.lock" ]; then
         echo "  BM Server is running"
     else
         echo "  BM Server is not running"
     fi
+
   else
+
+    ############################################################################
+    ############################## unknown option ##############################
+    ############################################################################
+
     echo "  unknown option: $OPERATIVE"
     echo "  try 'bm --help' for usage help."
   fi
+
 elif [ "$SUBCOMMAND" = "client" ]; then
+
   if [ "$OPERATIVE" = "install" ]; then
-    # bm install client /path/to/install/to
+
+    ############################################################################
+    ################## bm client install /path/to/install/to ###################
+    ############################################################################
+
     if [ ! -d $3 ]; then
       echo "  $3 is not a directory"
     else
       cat "$HERE/node_modules/browser-mirror/bm-client.js" > "$3/bm-client.js"
       echo "  Installed bm-client.js to $3/bm-client.js"
     fi
+
   else
+
+    ############################################################################
+    ############################## unknown option ##############################
+    ############################################################################
+
     echo "  unknown option: $OPERATIVE"
     echo "  try 'bm --help' for usage help."
   fi
+
 elif [ "$SUBCOMMAND" = "--help" ]; then
-  # bm --help
+
+  ##############################################################################
+  ################################# bm --help ##################################
+  ##############################################################################
+
   echo "  Report bugs to: https://github.com/Pamblam/browser-mirror/issues"
   echo "  pkg home page: https://github.com/Pamblam/browser-mirror"
   echo "  Usage: man bm"
-elif [ " $SUBCOMMAND" = "--version" ]; then
-  # bm --version
-  echo "  v1.1.7"
+
+elif [ "$SUBCOMMAND" = "--version" ]; then
+
+  ##############################################################################
+  ############################### bm --version #################################
+  ##############################################################################
+
+  echo "  v1.1.9"
+
 else 
+
+  ##############################################################################
+  ############################## unknown option ################################
+  ##############################################################################
+
   echo "  unknown option: $SUBCOMMAND"
   echo "  try 'bm --help' or 'man bm' for usage help."
+
 fi
