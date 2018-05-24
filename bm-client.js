@@ -52,6 +52,11 @@ const BMClient = (function(){
 		 * @returns {BMClient}
 		 */
 		constructor(sessionid, url, role='master', port=1337){
+			this.session = {
+				slaves: 0,
+				members: 0,
+				started: false,
+			};
 			this.role = role;
 			this.sessionid = sessionid;
 			this.url = url;
@@ -162,6 +167,9 @@ const BMClient = (function(){
 						this.session_error_cb(data);
 						break;
 					case 'session_update':
+						this.session.slaves = data.slaves;
+						this.session.members = data.members;
+						this.session.started = data.started;	
 						this.session_cb(data);
 						if(data.message === 'Session has started.'){
 							if(this.role === 'master'){
