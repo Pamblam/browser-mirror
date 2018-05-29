@@ -56,6 +56,15 @@
 		<h1>Browser-Mirror Slave Example</h1>
 		<hr>
 		
+		<div id="formtest"></div>
+		
+		<form id="myform">
+			<input id='forminupt' placeholder="type something here" />
+			<button type="submit">submit</button>
+		</form>
+		
+		<hr>
+		
 		<h2 id="header"></h2>
 		<p id="message"></p>
 		<hr>
@@ -204,7 +213,7 @@
 			var modal = document.getElementById('modal');
 			var toast = document.getElementById('toast');
 			
-			const mirror = BMClient(1, '127.0.0.1', 'slave', 1337);
+			const mirror = BMClient(1, '127.0.0.1', 'slave');
 			mirror.onError(err=>{
 				modal.style.display = 'block';
 				innerDiv.innerHTML = "<span style='color:red; font-size:1em;'>"+err.message+"</span>";
@@ -252,6 +261,13 @@
 					document.body.removeChild(div);
 				});
 			});
+			
+			document.getElementById('myform').onsubmit = function(e){
+				e.preventDefault();
+				var val = document.getElementById('forminupt').value;
+				var formtest = document.getElementById('formtest');
+				formtest.innerHTML = val;
+			};
 		</script>
 	</body>
 </html>

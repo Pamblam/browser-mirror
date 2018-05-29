@@ -4,7 +4,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.15</h1>
+<h1 align="center">Browser-Mirror v1.1.16</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -12,8 +12,7 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
 ## Requirements
 
  - **Server**
-    - A modern version of Node (I'm using 8)
-    - NPM is preferred for installing the server
+    - A modern version of Node & NPM
   - **Clients**
     - HTML5 browsers with support for ECMA6 & Websockets 
 
@@ -22,11 +21,11 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
 #### Install the server
 
  1) Navigate to where ever you want to install the server.
- 2) Create a new directory for the server 
+ 2) Create a new directory for the server:
 ```
 mkdir bm-server && cd bm-server
 ```
- 3) Login as root (if you need to), and run the installer 
+ 3) Login as root and run the installer:
 ```
 sudo -s # Login as root if needed
 source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
@@ -35,7 +34,14 @@ source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/brows
  5) Run `bm server stop` to stop the server
  6) Run `bm server logs` to view the server logs
  
- Run `man bm` or `bm --help` for further uses & info.
+#### Update the server
+
+ 1) Stop the server `bm server stop`
+ 2) Update the server `bm server update`
+ 3) Check that you have the latest version with `bm --version`
+ 4) restart the server `bm server start`
+
+Run `man bm` or `bm --help` for further uses & info.
  
 #### Implement it
   
@@ -68,7 +74,7 @@ The parameters are..
 This is mainly called when someone leaves or joins the session.
 
     mirror.onSessionUpdate(data=>{
-        document.getElementById("count").html = `${data.members}` people in the current session";
+        document.getElementById("count").innerHTML = `${data.members} people in the current session`;
     });
 
 ##### Connect to the Server
@@ -91,7 +97,7 @@ In the master....
 
 in the client....
 
-    mirror.onStateChange(state=>console.log(state.anything);
+    mirror.onStateChange(state=>console.log(state.anything));
 
 ### TODO
 

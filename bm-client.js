@@ -176,8 +176,8 @@ const BMClient = (function(){
 								_monitorMasterBrowserState.call(this);
 							}else{
 								_hideSlaveBrowserCursor.call(this);
-								_createSlaveBroswerCursor.call(this);
 							}
+							_createSlaveBroswerCursor.call(this);
 						}
 						break;
 				}
@@ -225,16 +225,31 @@ const BMClient = (function(){
 	 * @returns {BMClient}
 	 */
 	function _createSlaveBroswerCursor(){
-		this.cursor = new Image;
-		this.cursor.src = defaultCursor;
-		this.cursor.style.position = 'absolute';
-		this.cursor.style.zIndex = 99999999999;
-		this.cursor.style.top = 0;
-		this.cursor.style.left = 0;
-		document.body.appendChild(this.cursor);
+		if(this.role === 'slave'){
+			this.cursor = new Image;
+			this.cursor.src = defaultCursor;
+			this.cursor.style.position = 'absolute';
+			this.cursor.style.zIndex = 99999999999;
+			this.cursor.style.top = 0;
+			this.cursor.style.left = 0;
+			document.body.appendChild(this.cursor);
+		}else{
+			var cursor = new Image;
+			cursor.src = defaultCursor;
+			cursor.style.position = 'absolute';
+			cursor.style.zIndex = -99999999999;
+			cursor.style.top = 0;
+			cursor.style.left = 0;
+			cursor.style.opacity = 0;
+			document.body.appendChild(cursor);
+		}
 		return this;
 	}
 	
+	/**
+	 * 'private' method to give client cursor control back
+	 * @returns {BMClient}
+	 */
 	function _giveSlaveCursorBack(){
 		if(this.cursor) this.cursor.style.display = 'none';
 		document.body.style.cursor = 'default';
@@ -295,6 +310,19 @@ const BMClient = (function(){
 			
 			if(document !== ele && !ele.parentElement) return;
 			var tgt = new CssSelectorGenerator().getSelector(ele);
+			
+			// form events
+			if(ele.tagName === 'FORM'){
+				ele.addEventListener('submit', function(e){
+					if(e.target !== ele) return;
+					state.events.Event = {
+						target: tgt,
+						type: 'submit'
+					};
+					_broadcastMasterState.call(self);
+					delete state.events.Event;
+				});
+			}
 			
 			// scroll events
 			ele.addEventListener('scroll', function(e){
@@ -414,6 +442,11 @@ const BMClient = (function(){
 							view: window
 						});
 						break;
+					default:
+						evt = new Event(type, {
+							bubbles: true,
+							cancelable: true
+						});
 				}
 				tgt.dispatchEvent(evt);
 				delete state.events[evtConstructor];
