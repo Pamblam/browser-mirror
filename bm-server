@@ -42,7 +42,7 @@ wsServer.on('request', function (request) {
 		switch(data.action){
 			case "init_session":
 				if(data.role === 'master'){
-					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id: data.sessionid, master: null, slaves:[], started: false};
+					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id:data.sessionid, master:null, slaves:[], started:false, dimensions: {w:null, h:null, report:false, report_cnt:0, ready_cnt:0}};
 					session = sessions[data.sessionid];
 					if(!!session.master){
 						connection.sendUTF(JSON.stringify({
@@ -82,6 +82,7 @@ wsServer.on('request', function (request) {
 				}
 				log(`${role} joined session: ${data.sessionid}`);
 				break;
+				
 			case "set_state":
 				if(role !== 'master') break;
 				session.slaves.forEach(slave=>{
@@ -103,7 +104,50 @@ wsServer.on('request', function (request) {
 					}));
 				});
 				break;
-				
+			
+			case 'resize_ready':
+				session.dimensions.ready_cnt++;
+				var total_members = session.slaves.length+1;
+				if(total_members === session.dimensions.ready_cnt){
+					session.master.sendUTF(JSON.stringify({
+						action: 'all_members_resized', 
+					}));
+				}
+				break;
+			
+			case 'report_dims':
+				if(session.dimensions.w > data.dimensions.w) session.dimensions.w = data.dimensions.w;
+				if(session.dimensions.h > data.dimensions.h) session.dimensions.h = data.dimensions.h;
+				session.dimensions.report_cnt++;
+				if(session.slaves.length === session.dimensions.report_cnt){
+					var data = JSON.stringify({
+						action: 'init_browser_resize', 
+						dimensions: {
+							h: session.dimensions.h,
+							w: session.dimensions.w
+						}
+					});
+					session.master.sendUTF(data);
+					session.slaves.forEach(slave=>{
+						if(null === slave) return;
+						slave.sendUTF(data);
+					});
+				}
+				break;
+			
+			case "sync_dims":
+				if(role !== 'master') break;
+				session.dimensions.w = data.dimensions.w;
+				session.dimensions.h = data.dimensions.h;
+				data.dimensions.report = true;
+				session.slaves.forEach(slave=>{
+					if(null === slave) return;
+					slave.sendUTF(JSON.stringify({
+						action: 'request_dims'
+					}));
+				});
+				break;
+			
 			case "start_session":
 				session.started = true;
 				broadcastSessionUpdate('Session has started.');

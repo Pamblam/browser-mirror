@@ -69,6 +69,7 @@ const BMClient = (function(){
 			this.state = 'pending';
 			this.cursor = null;
 			this.allElementsCBs = [];
+			this.onAllSynced = function(){};
 			new MutationObserver(mutationsList=>{
 				for (var mutation of mutationsList) {
 					if (mutation.type == 'childList') {
@@ -114,14 +115,23 @@ const BMClient = (function(){
 			return this;
 		}
 		
+		/**
+		 * Register a callback to be called whenever state change is triggered
+		 * @param {Function} state_change_cb - A function that will be called whenver state is changed
+		 * @returns {BMClient}
+		 */
 		onStateChange(state_change_cb){
 			if(this.role == 'master') return this;	
 			this.state_change_cb = state_change_cb;
 			return this;
 		}
 		
+		/**
+		 * Broadcast a state change from master to all slaves	
+		 * @returns {BMClient}
+		 */
 		setState(state){
-			if(this.role !== 'master') return;
+			if(this.role !== 'master') return this;
 			this.connection.send(JSON.stringify({
 				action: 'set_passthru_state',
 				state: state
@@ -129,12 +139,20 @@ const BMClient = (function(){
 			return this;
 		}
 		
-		start(){
-			if(this.role !== 'master') return;
-			this.connection.send(JSON.stringify({
-				action: 'start_session',
-				sessionid: this.sessionid
-			}));
+		/**
+		 * Start the session (called on master only)
+		 * @param {Boolean}	syncBrowserSizes - If set to true will sync the size of all browsers
+		 * @returns {BMClient}
+		 */
+		start(syncBrowserSizes=false){
+			if(this.role !== 'master') return this;
+			const start_session = ()=>{
+				this.connection.send(JSON.stringify({
+					action: 'start_session',
+				}));
+			};
+			if(syncBrowserSizes) _syncBrowserSizes.call(this).then(start_session)
+			else start_session();
 			return this;
 		}
 		
@@ -156,16 +174,42 @@ const BMClient = (function(){
 						this.state_change_cb(data.state);
 						break;
 						
+					case 'request_dims':
+						this.connection.send(JSON.stringify({
+							action: 'report_dims',
+							dimensions: {
+								w: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+								h: Math.max(document.documentElement.clientHeight, window.innerHeight || 0) 
+							}
+						}));
+						break;
+					
+					case 'all_members_resized':
+						if(this.role !== 'master') return;
+						this.onAllSynced();
+						break;
+					
+					case 'init_browser_resize':
+						_buildFakeBrowser.call(this).then(()=>{
+							_listenForBrowserSizeChanges.call(this);
+							this.connection.send(JSON.stringify({
+								action: 'resize_ready'
+							}));
+						});
+						break;
+						
 					case 'set_state':
 						if(data.state.cursor.pos){
 							state = data.state;
 							_setSlaveState.call(this);
 						}
 						break;
+						
 					case 'session_error':
 						_giveSlaveCursorBack.call(this);
 						this.session_error_cb(data);
 						break;
+						
 					case 'session_update':
 						this.session.slaves = data.slaves;
 						this.session.members = data.members;
@@ -189,6 +233,22 @@ const BMClient = (function(){
 			};
 			return this;
 		}
+	}
+	
+	/**
+	 * Make all browsers the same size
+	 */
+	function _syncBrowserSizes(){
+		return new Promise(done=>{
+			this.onAllSynced = done;
+			this.connection.send(JSON.stringify({
+				action: 'sync_dims',
+				dimensions: {
+					w: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+					h: Math.max(document.documentElement.clientHeight, window.innerHeight || 0) 
+				}
+			}));
+		});
 	}
 	
 	/**
