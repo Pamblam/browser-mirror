@@ -236,6 +236,42 @@ const BMClient = (function(){
 	}
 	
 	/**
+	 * Build the fake browser
+	 */
+	function _buildFakeBrowser(){
+		if(getParameterByName('bm-viewport', window.location.href)) return;
+		var cw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		var ch = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+		var url = setQSParam(window.location.href, 'bm-viewport', 1);
+		var html = `<!doctype hmtl>
+		<html id=html>
+		<head>
+			<style>
+				#body, #html{
+					margin: 0;
+					padding: 0;
+					background: #86898e
+				}
+				iframe{
+					border: 0;
+					background-color: white;
+					position: absolute;
+					top: ${(ch-h)/2}px;
+					left: ${(cw-w)/2}px;
+				}
+			</style>
+		</head>
+		<body id=body>
+			<iframe src="${url}" width="${w}" height="${h}">
+		</body>
+		</html>`;
+		document.open();
+		document.write(html);
+		document.close();
+		return this;
+	}
+	
+	/**
 	 * Make all browsers the same size
 	 */
 	function _syncBrowserSizes(){
@@ -538,7 +574,75 @@ const BMClient = (function(){
 		Array.from(document.querySelectorAll('*')).forEach(fn);
 		return this;
 	}
+	
+	function setQSParam(url, key, value=''){
+		var qs = url.substr(~url.indexOf("?")?url.indexOf("?")+1:url.length);
+		var hash = qs.substr(~url.indexOf('#')?qs.lastIndexOf('#'):qs.length);
+		url = url.substr(0, url.length-hash.length);
+		qs = qs.substr(0, qs.length-hash.length);
+		var sep = !qs&&url.substr(-1)!=='?'?'?':!!qs&&url.substr(-1)!=='&'?'&':'';
+		var added=0,nqs=[],k,v,parts; 
+		qs.split('&').forEach(kvp=>{
+			if(!kvp) return;
+			[k,v]=kvp.split('=');
+			if(k==key){ 
+				v=value;
+				added=1;
+			}
+			nqs.push(k+"="+(v?encodeURIComponent(v):''));
+		});
+		qs=nqs.join('&');
+		if(!added) qs+=(sep+key+"="+(value?encodeURIComponent(value):''));
+		var baseurl = url.substr(0,~url.indexOf("?")?url.indexOf("?")+1:url.length);
+		return baseurl+qs+hash;
+	}
 
+	function getParameterByName(name, url){
+		name = name.replace(/[\[\]]/g, "\\$&");
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		results = regex.exec(url);
+		if (!results) return null;
+		if (!results[2]) return '';
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+
+	function initViewport(){
+		if(getParameterByName('bm-viewport', window.location.href)) return;
+		var cw = document.body.clientWidth; //Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		var ch = document.body.clientHeight; //Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+		var url = setQSParam(window.location.href, 'bm-viewport', 1);
+		var html = `<!doctype hmtl>
+		<html>
+		<head>
+			<style>
+				#body, #html{
+					margin: 0;
+					padding: 0;
+					background: #86898e
+				}
+				iframe{
+					border: 0;
+					margin: 0;
+					width: ${cw}px;
+					height: ${ch}px;
+					background-color: white;
+					position: absolute;
+					top: 0;
+					left: 0;
+				}
+			</style>
+		</head>
+		<body>
+			<iframe onload='alert("farts")' src="${url}"></iframe>
+		</body>
+		</html>`;
+		stop();
+		document.close();
+		document.documentElement.innerHTML = html;
+	}
+	
+	initViewport();
+	
 	const f = function(sessionid, url, role='master', port=1337){
 		return new BMClient(sessionid, url, role, port);
 	};

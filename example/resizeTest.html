@@ -275,20 +275,36 @@
 			}
 			
 			function resizeViewport(w, h){
+				console.log('resizing viewport');
 				if(getParameterByName('bm-viewport', window.location.href)) return;
 				var cw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 				var ch = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 				var url = setQSParam(window.location.href, 'bm-viewport', 1);
 				var html = `<!doctype hmtl>
-				<html>
+				<html id=html>
 				<head>
-		
+					<style>
+						#body, #html{
+							margin: 0;
+							padding: 0;
+							background: #86898e
+						}
+						iframe{
+							border: 0;
+							background-color: white;
+							position: absolute;
+							top: ${(ch-h)/2}px;
+							left: ${(cw-w)/2}px;
+						}
+					</style>
 				</head>
-				<body>
+				<body id=body>
 					<iframe src="${url}" width="${w}" height="${h}">
 				</body>
 				</html>`;
+				document.open();
 				document.write(html);
+				document.close();
 			}
 			
 			setTimeout(()=>resizeViewport(1000, 400), 3000);
