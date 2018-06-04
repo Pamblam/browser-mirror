@@ -69,6 +69,7 @@ const BMClient = (function(){
 			this.state = 'pending';
 			this.cursor = null;
 			this.allElementsCBs = [];
+			this.onAllSynced = function(){};
 			new MutationObserver(mutationsList=>{
 				for (var mutation of mutationsList) {
 					if (mutation.type == 'childList') {
@@ -114,14 +115,23 @@ const BMClient = (function(){
 			return this;
 		}
 		
+		/**
+		 * Register a callback to be called whenever state change is triggered
+		 * @param {Function} state_change_cb - A function that will be called whenver state is changed
+		 * @returns {BMClient}
+		 */
 		onStateChange(state_change_cb){
 			if(this.role == 'master') return this;	
 			this.state_change_cb = state_change_cb;
 			return this;
 		}
 		
+		/**
+		 * Broadcast a state change from master to all slaves	
+		 * @returns {BMClient}
+		 */
 		setState(state){
-			if(this.role !== 'master') return;
+			if(this.role !== 'master') return this;
 			this.connection.send(JSON.stringify({
 				action: 'set_passthru_state',
 				state: state
@@ -129,12 +139,20 @@ const BMClient = (function(){
 			return this;
 		}
 		
-		start(){
-			if(this.role !== 'master') return;
-			this.connection.send(JSON.stringify({
-				action: 'start_session',
-				sessionid: this.sessionid
-			}));
+		/**
+		 * Start the session (called on master only)
+		 * @param {Boolean}	syncBrowserSizes - If set to true will sync the size of all browsers
+		 * @returns {BMClient}
+		 */
+		start(syncBrowserSizes=false){
+			if(this.role !== 'master') return this;
+			const start_session = ()=>{
+				this.connection.send(JSON.stringify({
+					action: 'start_session',
+				}));
+			};
+			if(syncBrowserSizes) _syncBrowserSizes.call(this).then(start_session);
+			else start_session();
 			return this;
 		}
 		
@@ -142,7 +160,7 @@ const BMClient = (function(){
 		 * Start mirroring client or master
 		 * @returns {BMClient}
 		 */
-		connect(){
+		connect(forceSameBrowser=false){
 			if(!window.WebSocket){
 				this.error_cb(new Error("Browser doesn't support websockets"));
 				return this;
@@ -156,16 +174,45 @@ const BMClient = (function(){
 						this.state_change_cb(data.state);
 						break;
 						
+					case 'request_dims':
+						this.connection.send(JSON.stringify({
+							action: 'report_dims',
+							dimensions: {
+								w: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+								h: Math.max(document.documentElement.clientHeight, window.innerHeight || 0) 
+							}
+						}));
+						break;
+					
+					case 'all_members_resized':
+						if(this.role !== 'master') return;
+						this.onAllSynced();
+						break;
+					
+					case 'resize':
+						_resizeViewport.call(this, data.dimensions.w, data.dimensions.h)
+						break;
+					
+					case 'init_browser_resize':
+						_resizeViewport.call(this, data.dimensions.w, data.dimensions.h);
+						_listenForBrowserSizeChanges.call(this);
+						this.connection.send(JSON.stringify({
+							action: 'resize_ready'
+						}));
+						break;
+						
 					case 'set_state':
 						if(data.state.cursor.pos){
 							state = data.state;
 							_setSlaveState.call(this);
 						}
 						break;
+						
 					case 'session_error':
 						_giveSlaveCursorBack.call(this);
 						this.session_error_cb(data);
 						break;
+						
 					case 'session_update':
 						this.session.slaves = data.slaves;
 						this.session.members = data.members;
@@ -184,7 +231,7 @@ const BMClient = (function(){
 			};
 			this.connection.onopen = ()=>{
 				this.state = 'open';
-				_initSession.call(this);
+				_initSession.call(this, forceSameBrowser);
 				_monitorServerConnectionState.call(this);
 			};
 			return this;
@@ -192,14 +239,32 @@ const BMClient = (function(){
 	}
 	
 	/**
+	 * Make all browsers the same size
+	 */
+	function _syncBrowserSizes(){
+		return new Promise(done=>{
+			this.onAllSynced = done;
+			this.connection.send(JSON.stringify({
+				action: 'sync_dims',
+				dimensions: {
+					w: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+					h: Math.max(document.documentElement.clientHeight, window.innerHeight || 0) 
+				}
+			}));
+		});
+	}
+	
+	/**
 	 * 'private' method for initiating the session with the server
 	 * @returns {BMClient}
 	 */
-	function _initSession(){
+	function _initSession(forceSameBrowser){
 		this.connection.send(JSON.stringify({
 			action: 'init_session',
 			sessionid: this.sessionid,
-			role: this.role
+			role: this.role,
+			browser: _getBrowserName(),
+			forceBrowser: forceSameBrowser && this.role == 'master'
 		}));
 		return this;
 	}
@@ -478,7 +543,143 @@ const BMClient = (function(){
 		Array.from(document.querySelectorAll('*')).forEach(fn);
 		return this;
 	}
+	
+	/**
+	 * Given a url, a key and optionally a value
+	 * will return the url with the added key/value pair
+	 * @param {string} url
+	 * @param {string} key
+	 * @param {value} optional value
+	 * @return {string} new url
+	 */
+	function setQSParam(url, key, value=''){
+		var qs = url.substr(~url.indexOf("?")?url.indexOf("?")+1:url.length);
+		var hash = qs.substr(~url.indexOf('#')?qs.lastIndexOf('#'):qs.length);
+		url = url.substr(0, url.length-hash.length);
+		qs = qs.substr(0, qs.length-hash.length);
+		var sep = !qs&&url.substr(-1)!=='?'?'?':!!qs&&url.substr(-1)!=='&'?'&':'';
+		var added=0,nqs=[],k,v,parts; 
+		qs.split('&').forEach(kvp=>{
+			if(!kvp) return;
+			[k,v]=kvp.split('=');
+			if(k==key){ 
+				v=value;
+				added=1;
+			}
+			nqs.push(k+"="+(v?encodeURIComponent(v):''));
+		});
+		qs=nqs.join('&');
+		if(!added) qs+=(sep+key+"="+(value?encodeURIComponent(value):''));
+		var baseurl = url.substr(0,~url.indexOf("?")?url.indexOf("?")+1:url.length);
+		return baseurl+qs+hash;
+	}
 
+	/**
+	 * Given a url and a key will return the value of that key in the querystring if it exists
+	 * @param {string} name - the name of the key
+	 * @param {string} url - the url from which to pull the value
+	 * @return {string} - the value of the key in the url
+	 */
+	function getParameterByName(name, url){
+		name = name.replace(/[\[\]]/g, "\\$&");
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		results = regex.exec(url);
+		if (!results) return null;
+		if (!results[2]) return '';
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+
+	/**
+	 * Set the page up to be viewed in an adjustable viewport
+	 */
+	function initViewport(){
+		if(getParameterByName('bm-viewport', window.location.href)) return;
+		var cw = document.body.clientWidth; 
+		var ch = document.body.clientHeight;
+		var url = setQSParam(window.location.href, 'bm-viewport', 1);
+		var html = `<!doctype hmtl>
+		<html>
+		<head>
+			<style>
+				body, html{
+					margin: 0;
+					padding: 0;
+					height: 100%;
+					width:100%;
+					background: #86898e;
+					overflow: hidden;
+				}
+				iframe{
+					border: 0;
+					margin: 0;
+					width: ${cw}px;
+					height: ${ch}px;
+					background-color: white;
+					position: absolute;
+					top: 0;
+					left: 0;
+				}
+			</style>
+		</head>
+		<body>
+			<iframe id='bmframe' src="${url}" seamless="seamless" allowfullscreen="allowfullscreen"></iframe>
+		</body>
+		</html>`;
+		stop();
+		document.close();
+		document.documentElement.innerHTML = html;
+	}
+	
+	/**
+	 * Resize the viewport
+	 */
+	function _resizeViewport(w, h){
+		var cw = window.parent.document.body.clientWidth;
+		var ch = window.parent.document.body.clientHeight;
+		var iframe = window.parent.document.getElementById('bmframe');
+		iframe.style.width = w+"px";
+		iframe.style.height = h+"px";
+		iframe.style.top = ((ch-h)/2)+"px";
+		iframe.style.left = ((cw-w)/2)+"px";
+	}
+	
+	/**
+	 * Listen for viewport size changes to sync all with the smallest one
+	 */
+	function _listenForBrowserSizeChanges(){
+		var self = this;
+		parent.window.addEventListener('resize', function(){
+			var w = window.parent.document.body.clientWidth;
+			var h = window.parent.document.body.clientHeight;
+			self.connection.send(JSON.stringify({
+				action: 'resize_all',
+				dimensions: {w:w, h:h}
+			}));
+		});
+	}
+	
+	/**
+	 * Get the name of the current browser
+	 * @return {string} - the name of the current browser
+	 */
+	function _getBrowserName(){
+		var nAgt = navigator.userAgent;
+		var browserName = navigator.appName;
+		var nameOffset, verOffset;
+		if ((verOffset = nAgt.indexOf("Opera")) != - 1) browserName = "Opera";
+		else if ((verOffset = nAgt.indexOf("MSIE")) != - 1) browserName = "Microsoft Internet Explorer";
+		else if ((verOffset = nAgt.indexOf("Chrome")) != - 1) browserName = "Google Chrome";
+		else if ((verOffset = nAgt.indexOf("Safari")) != - 1) browserName = "Safari";
+		else if ((verOffset = nAgt.indexOf("Firefox")) != - 1) browserName = "Mozilla Firefox";
+		else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) < (verOffset = nAgt.lastIndexOf('/'))) {
+			browserName = nAgt.substring(nameOffset, verOffset);
+			if (browserName.toLowerCase() == browserName.toUpperCase()) browserName = navigator.appName;
+		}
+		return browserName;
+	}
+	
+	initViewport();
+	
 	const f = function(sessionid, url, role='master', port=1337){
 		return new BMClient(sessionid, url, role, port);
 	};

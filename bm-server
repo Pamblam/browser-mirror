@@ -12,16 +12,34 @@ var sessions = {};
 
 var server = http.createServer(function(request, response){});
 server.listen(port, function(){
-	log(`Server active on port ${port}`);
+	log(`Server active on farts ${port}`);
 });
 
 var wsServer = new webSocketServer({
 	httpServer: server
 });
 
+// Given an array of objects with w and h values will return 
+// a new object with the minimum values
+const getMinDims = d => d.reduce((acc, cur)=>{
+	if(!acc.w || acc.w > cur.w) acc.w = cur.w;
+  if(!acc.h || acc.h > cur.h) acc.h = cur.h;
+  return acc;
+}, {w:0, h:0});
+
+// Given an array of objects with w and h values (d),
+// an object that matches at least one of the objects in the array (c),
+// and a new object with a w and h value (n),
+// will replace c with n in the array d and return it
+const replaceValue  = (d, c, n) => d.reduce((a, i)=>{
+	if(i.w == c.w && i.h == c.h) i = n;
+	a.push(i);
+	return a;
+}, []);
+
 wsServer.on('request', function (request) {
 	var connection = request.accept(null, request.origin);	
-	var role, session, index;
+	var role, session, index, myDims, browser;
 	
 	const broadcastSessionUpdate = (msg)=>{
 		[session.master, ...session.slaves].forEach(con=>{
@@ -42,7 +60,7 @@ wsServer.on('request', function (request) {
 		switch(data.action){
 			case "init_session":
 				if(data.role === 'master'){
-					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id: data.sessionid, master: null, slaves:[], started: false};
+					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id:data.sessionid, master:null, slaves:[], started:false, forceBrowser:false, dimensions: {d:[], report_cnt:0, ready_cnt:0}};
 					session = sessions[data.sessionid];
 					if(!!session.master){
 						connection.sendUTF(JSON.stringify({
@@ -55,7 +73,8 @@ wsServer.on('request', function (request) {
 					role = 'master';
 					
 					broadcastSessionUpdate('Leader has joined session.');
-					
+					browser = data.browser;
+					if(data.forceBrowser) session.forceBrowser = data.browser;
 				}else{
 					
 					if(!sessions[data.sessionid]){
@@ -72,6 +91,16 @@ wsServer.on('request', function (request) {
 							action: 'session_error', 
 							message: 'This session has already started. It\'s too late to join.'
 						}));
+						return;
+					}
+				
+					if(session.forceBrowser && session.forceBrowser !== data.browser){
+						connection.sendUTF(JSON.stringify({
+							action: 'session_error', 
+							message: `You are using ${data.browser}, but this session requires you to use ${session.forceBrowser}. Please try again in ${session.forceBrowser}.`
+						}));
+						broadcastSessionUpdate(`Member attempted to join session using ${data.browser}... Member is switching to ${session.forceBrowser} now.`);
+						return;
 					}
 				
 					index = session.slaves.length;
@@ -82,6 +111,7 @@ wsServer.on('request', function (request) {
 				}
 				log(`${role} joined session: ${data.sessionid}`);
 				break;
+				
 			case "set_state":
 				if(role !== 'master') break;
 				session.slaves.forEach(slave=>{
@@ -103,7 +133,70 @@ wsServer.on('request', function (request) {
 					}));
 				});
 				break;
-				
+			
+			case 'resize_ready':
+				session.dimensions.ready_cnt++;
+				var total_members = session.slaves.length+1;
+				if(total_members === session.dimensions.ready_cnt){
+					session.master.sendUTF(JSON.stringify({
+						action: 'all_members_resized', 
+					}));
+				}
+				break;
+			
+			case 'resize_all':
+				session.dimensions.d = replaceValue(session.dimensions.d, myDims, data.dimensions);
+				myDims = data.dimensions;
+				var minDims = getMinDims(session.dimensions.d);
+				if(minDims.w == data.dimensions.w || minDims.h == data.dimensions.h){
+					var data = JSON.stringify({
+						action: 'resize', 
+						dimensions: {
+							h: minDims.h,
+							w: minDims.w
+						}
+					});
+					session.master.sendUTF(data);
+					session.slaves.forEach(slave=>{
+						if(null === slave) return;
+						slave.sendUTF(data);
+					});
+				}
+				break;
+			
+			case 'report_dims':
+				myDims = data.dimensions;
+				session.dimensions.d.push(myDims);
+				session.dimensions.report_cnt++;
+				if(session.slaves.length === session.dimensions.report_cnt){
+					var minDims = getMinDims(session.dimensions.d);
+					var data = JSON.stringify({
+						action: 'init_browser_resize', 
+						dimensions: {
+							h: minDims.h,
+							w: minDims.w
+						}
+					});
+					session.master.sendUTF(data);
+					session.slaves.forEach(slave=>{
+						if(null === slave) return;
+						slave.sendUTF(data);
+					});
+				}
+				break;
+			
+			case "sync_dims":
+				if(role !== 'master') break;
+				myDims = data.dimensions;
+				session.dimensions.d.push(myDims);
+				session.slaves.forEach(slave=>{
+					if(null === slave) return;
+					slave.sendUTF(JSON.stringify({
+						action: 'request_dims'
+					}));
+				});
+				break;
+			
 			case "start_session":
 				session.started = true;
 				broadcastSessionUpdate('Session has started.');
