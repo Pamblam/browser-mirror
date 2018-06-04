@@ -2,9 +2,10 @@
 
 
 
+
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.16</h1>
+<h1 align="center">Browser-Mirror v1.1.17</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -47,6 +48,8 @@ Run `man bm` or `bm --help` for further uses & info.
   
  Add the client side JS file to your project, either by running `bm client install /path/to/project` or download it manually from the [git repo](https://raw.githubusercontent.com/Pamblam/browser-mirror/master/bm-client.js), then put in a script tag.
 
+**-> Important: This script must be included above all other Javascripts <-**
+
     <script src='bm-client.js'></script>
 
 The master page will control all the "slave" pages.
@@ -79,11 +82,15 @@ This is mainly called when someone leaves or joins the session.
 
 ##### Connect to the Server
 
+You can optionally pass `true` into the connect method if you wish to force all members to use the same browser as the Master. If your page does a CSS reset this might not be necessary, but if your page renders different on different browsers it's helpful to use this option.
+
     mirror.connect();
 
 ##### Start the Session
 
 Only the master should call the `start` method, and it should only be called when the session has all it's members. Monitor the `data.members` on each session update and call `start` when everyone has joined. Once the `start` method is called, no others will be allowed to join.
+
+You can optionally pass `true` into the start method to resize all browsers to match the size of the smallest browser in the session. This is helpful if the page being viewed is responsive or uses percentages for positioning by making sure the mouse cursor is always over the same elements for each of the members.
 
     mirror.start()
 
