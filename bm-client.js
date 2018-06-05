@@ -594,8 +594,8 @@ const BMClient = (function(){
 	 */
 	function initViewport(){
 		if(getParameterByName('bm-viewport', window.location.href)) return;
-		var cw = document.body.clientWidth; 
-		var ch = document.body.clientHeight;
+		var cw = document.documentElement.clientWidth; 
+		var ch = document.documentElement.clientHeight;
 		var url = setQSParam(window.location.href, 'bm-viewport', 1);
 		var html = `<!doctype hmtl>
 		<html>
@@ -634,8 +634,8 @@ const BMClient = (function(){
 	 * Resize the viewport
 	 */
 	function _resizeViewport(w, h){
-		var cw = window.parent.document.body.clientWidth;
-		var ch = window.parent.document.body.clientHeight;
+		var cw = window.parent.document.documentElement.clientWidth;
+		var ch = window.parent.document.documentElement.clientHeight;
 		var iframe = window.parent.document.getElementById('bmframe');
 		iframe.style.width = w+"px";
 		iframe.style.height = h+"px";
@@ -649,8 +649,8 @@ const BMClient = (function(){
 	function _listenForBrowserSizeChanges(){
 		var self = this;
 		parent.window.addEventListener('resize', function(){
-			var w = window.parent.document.body.clientWidth;
-			var h = window.parent.document.body.clientHeight;
+			var w = window.parent.document.documentElement.clientWidth;
+			var h = window.parent.document.documentElement.clientHeight;
 			self.connection.send(JSON.stringify({
 				action: 'resize_all',
 				dimensions: {w:w, h:h}
