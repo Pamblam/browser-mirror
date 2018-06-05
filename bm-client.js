@@ -684,5 +684,6 @@ const BMClient = (function(){
 		return new BMClient(sessionid, url, role, port);
 	};
 	f.getSelector = ele=>new CssSelectorGenerator().getSelector(ele);
+	f.getBrowserName = _getBrowserName;
 	return f;
 })();
