@@ -16,7 +16,8 @@ server.listen(port, function(){
 });
 
 var wsServer = new webSocketServer({
-	httpServer: server
+	httpServer: server,
+	autoAcceptConnections: true
 });
 
 // Given an array of objects with w and h values will return 
