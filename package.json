@@ -1,6 +1,6 @@
 {
   "name": "browser-mirror",
-  "version": "1.1.21",
+  "version": "1.1.22",
   "description": "Lets a user open a webpae on one browser and control that webpage in other browsers, on other computers as a light-weight alternative to screensharing.",
   "main": "bm-client.js",
   "scripts": {

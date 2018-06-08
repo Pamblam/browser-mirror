@@ -35,23 +35,23 @@ elif [ "$SUBCOMMAND" = "update" ]; then
     exit 1
   fi
   cd $HERE
-  CURR_PACKAGE_VERSION=$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
-    | grep version \
-    | head -1 \
-    | awk -F: '{ print $2 }' \
-    | sed 's/[",]//g' \
-    | tr -d '[[:space:]]')
-  THIS_PACKAGE_VERSION=$(cat $HERE/node_modules/browser-mirror/package.json \
-    | grep version \
-    | head -1 \
-    | awk -F: '{ print $2 }' \
-    | sed 's/[",]//g' \
-    | tr -d '[[:space:]]')
-  LATEST_VERSION=$(echo  "$THIS_PACKAGE_VERSION
-$CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
-  if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
-    echo "  Browser-Mirror is up to date."
-  else
+#  CURR_PACKAGE_VERSION=$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
+#    | grep version \
+#    | head -1 \
+#    | awk -F: '{ print $2 }' \
+#    | sed 's/[",]//g' \
+#    | tr -d '[[:space:]]')
+#  THIS_PACKAGE_VERSION=$(cat $HERE/node_modules/browser-mirror/package.json \
+#    | grep version \
+#    | head -1 \
+#    | awk -F: '{ print $2 }' \
+#    | sed 's/[",]//g' \
+#    | tr -d '[[:space:]]')
+#  LATEST_VERSION=$(echo  "$THIS_PACKAGE_VERSION
+#$CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
+#  if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
+#    echo "  Browser-Mirror is up to date."
+#  else
     [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile > /dev/null 2>&1
     [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
     [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
@@ -62,7 +62,7 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
     killall bm-server > /dev/null 2>&1
     source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
     cd $PWD
-  fi
+#  fi
 
 elif [ "$SUBCOMMAND" = "server" ]; then
 
@@ -183,7 +183,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.1.21"
+  echo "  v1.1.22"
 
 else 
 

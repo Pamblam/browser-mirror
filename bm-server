@@ -3,6 +3,7 @@
 process.title = 'bm-server';
 var webSocketServer = require('websocket').server;
 var https = require('https');
+const fs = require('fs');
 const log=str=>console.log(`[${new Date().toLocaleString()}] - ${str}`);
 
 // if a port number is passedinto the command, use that, else default to 1337
@@ -10,7 +11,12 @@ var port = (process.argv[2]||"").trim() || 1337;
 
 var sessions = {};
 
-var server = https.createServer(function(request, response){});
+var server = https.createServer({
+  key: fs.readFileSync('/usr/lib/ssl/mercury.ourtownamerica.com.key'),
+  cert: fs.readFileSync('/usr/lib/ssl/mercury.ourtownamerica.com.crt'),
+  ca: fs.readFileSync('/usr/lib/ssl/intermediate.crt')
+}, function(request, response){});
+
 server.listen(port, function(){
 	log(`Server active on farts ${port}`);
 });
