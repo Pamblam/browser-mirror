@@ -18,7 +18,7 @@ var server = https.createServer({
 }, function(request, response){});
 
 server.listen(port, function(){
-	log(`Server active on farts ${port}`);
+	log(`Server active on port ${port}`);
 });
 
 var wsServer = new webSocketServer({
@@ -63,6 +63,7 @@ wsServer.on('request', function (request) {
 	};
 	
 	connection.on('message', function (message) {
+		log('msg received '+message);
 		var data = JSON.parse(message.utf8Data);
 		switch(data.action){
 			case "init_session":
