@@ -165,7 +165,7 @@ const BMClient = (function(){
 				this.error_cb(new Error("Browser doesn't support websockets"));
 				return this;
 			}
-			this.connection = new WebSocket(`ws://${this.url}:${this.port}`);
+			this.connection = new WebSocket(`wss://${this.url}:${this.port}`);
 			this.connection.onerror = ()=>this.error_cb(new Error('Can\'t establish connection to the server.'));
 			this.connection.onmessage = data=>{
 				data = JSON.parse(data.data);
