@@ -1,7 +1,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.24</h1>
+<h1 align="center">Browser-Mirror v1.2.1</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -27,7 +27,7 @@ mkdir bm-server && cd bm-server
 sudo -s # Login as root if needed
 source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
 ```
- 4) Run `bm server start` to start the websocket server. You can give it a port number if you want it to run a port other than 1337 (eg, `bm server start 1223`)
+ 4) Run `bm server start` to start the websocket server. You can give it a port number if you want it to run on a port other than 1337 (eg, `bm server start 1223`)
  5) Run `bm server stop` to stop the server
  6) Run `bm server logs` to view the server logs
  

@@ -77,7 +77,7 @@ wsServer.on('request', function (request) {
 				if(data.role === 'master'){
 					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id:data.sessionid, master:null, slaves:[], started:false, forceBrowser:false, dimensions: {d:[], report_cnt:0, ready_cnt:0}};
 					session = sessions[data.sessionid];
-					if(!!session.master){
+					if(!!session.master && connection){
 						connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: 'There is already a master assigned for this session.'
@@ -92,7 +92,7 @@ wsServer.on('request', function (request) {
 					if(data.forceBrowser) session.forceBrowser = data.browser;
 				}else{
 					
-					if(!sessions[data.sessionid]){
+					if(!sessions[data.sessionid] && connection){
 						connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: 'This session has already ended.'
@@ -101,7 +101,7 @@ wsServer.on('request', function (request) {
 					}
 					
 					session = sessions[data.sessionid];
-					if(session.started){
+					if(session.started && connection){
 						connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: 'This session has already started. It\'s too late to join.'
@@ -110,7 +110,7 @@ wsServer.on('request', function (request) {
 					}
 				
 					if(session.forceBrowser && session.forceBrowser !== data.browser){
-						connection.sendUTF(JSON.stringify({
+						if(connection) connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: `You are using ${data.browser}, but this session requires you to use ${session.forceBrowser}. Please try again in ${session.forceBrowser}.`
 						}));
@@ -152,7 +152,7 @@ wsServer.on('request', function (request) {
 			case 'resize_ready':
 				session.dimensions.ready_cnt++;
 				var total_members = session.slaves.length+1;
-				if(total_members === session.dimensions.ready_cnt){
+				if(total_members === session.dimensions.ready_cnt && session.master){
 					session.master.sendUTF(JSON.stringify({
 						action: 'all_members_resized', 
 					}));
@@ -171,7 +171,7 @@ wsServer.on('request', function (request) {
 							w: minDims.w
 						}
 					});
-					session.master.sendUTF(data);
+					if(session.master) session.master.sendUTF(data);
 					session.slaves.forEach(slave=>{
 						if(null === slave) return;
 						slave.sendUTF(data);
@@ -192,7 +192,7 @@ wsServer.on('request', function (request) {
 							w: minDims.w
 						}
 					});
-					session.master.sendUTF(data);
+					if(session.master) session.master.sendUTF(data);
 					session.slaves.forEach(slave=>{
 						if(null === slave) return;
 						slave.sendUTF(data);
