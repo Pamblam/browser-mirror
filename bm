@@ -116,7 +116,7 @@ $CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
     killall bm-server > /dev/null 2>&1
     source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/installer)"
     cd $PWD
-#  fi
+  fi
 
 elif [ "$SUBCOMMAND" = "server" ]; then
 
@@ -237,7 +237,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.2.1"
+  echo "  v1.2.2"
 
 else 
 
