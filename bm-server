@@ -2,7 +2,8 @@
 
 process.title = 'bm-server';
 var webSocketServer = require('websocket').server;
-var https = require('https');
+require('dotenv').config();
+var http = require(process.env.KEY && process.env.CERT ? 'https' : 'http');
 const fs = require('fs');
 const log=str=>console.log(`[${new Date().toLocaleString()}] - ${str}`);
 
@@ -11,27 +12,33 @@ var port = (process.argv[2]||"").trim() || 1337;
 
 var sessions = {};
 
-var server = https.createServer({
-  key: fs.readFileSync('/usr/lib/ssl/mercury.ourtownamerica.com.key'),
-  cert: fs.readFileSync('/usr/lib/ssl/mercury.ourtownamerica.com.crt'),
-  ca: fs.readFileSync('/usr/lib/ssl/intermediate.crt')
-}, function(request, response){});
+var server;
+if(process.env.KEY && process.env.CERT){
+	var opts = {
+		key: fs.readFileSync(process.env.KEY),
+		cert: fs.readFileSync(process.env.CERT),
+	};
+	if(process.env.CA) opts.ca = process.env.CA
+	server = http.createServer(opts, function(request, response){});
+}else{
+	server = http.createServer(function(request, response){});
+}
+  
 
 server.listen(port, function(){
 	log(`Server active on port ${port}`);
 });
 
 var wsServer = new webSocketServer({
-	httpServer: server,
-	autoAcceptConnections: true
+	httpServer: server
 });
 
 // Given an array of objects with w and h values will return 
 // a new object with the minimum values
 const getMinDims = d => d.reduce((acc, cur)=>{
 	if(!acc.w || acc.w > cur.w) acc.w = cur.w;
-  if(!acc.h || acc.h > cur.h) acc.h = cur.h;
-  return acc;
+	if(!acc.h || acc.h > cur.h) acc.h = cur.h;
+	return acc;
 }, {w:0, h:0});
 
 // Given an array of objects with w and h values (d),

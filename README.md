@@ -1,11 +1,7 @@
 
-
-
-
-
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.1.23</h1>
+<h1 align="center">Browser-Mirror v1.1.24</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -13,8 +9,8 @@ Browser-Mirror allows two (or more) remote browsers visiting the same web page t
 ## Requirements
 
  - **Server**
-    - A modern version of Node & NPM
-  - **Clients**
+    - A modern version of Node & NPM on a Mac/*nix OS w/ BASH
+ - **Clients**
     - HTML5 browsers with support for ECMA6 & Websockets 
 
 ## Quickstart (For Mac & Linux)
@@ -105,6 +101,28 @@ In the master....
 in the client....
 
     mirror.onStateChange(state=>console.log(state.anything));
+
+### Securing your connection
+
+If your site runs over HTTPS you *must* secure your websocket connection or none of this will work. 
+
+##### Securing the server
+
+Before starting the server you just have to configure it to use your SSL certificate, key and ca file. If you do not know where these are located [read this](https://www.namecheap.com/support/knowledgebase/article.aspx/9834/69/how-can-i-find-the-private-key-for-my-ssl-certificate) for some help figuring it out.
+
+From the server machine just run these three commands to provide the server with your certificate info and it will automatically run over a secure connection from then on. Substitute the paths for the paths to your own files.
+
+ 1. `bm set certificate /path/to/my/certificate`
+ 2. `bm set key /path/to/my/key`
+ 3. `bm set ca /path/to/my/ca`
+
+##### Securing the client
+
+To secure the client you just instantiate the class with the `secure` method like so:
+
+    const mirror = BMClient(1, '127.0.0.1', 'master').secure();
+
+Everything else works as described above.
 
 ### TODO
 

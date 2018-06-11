@@ -4,8 +4,62 @@ HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PWD=$(pwd)
 SUBCOMMAND=$1
 OPERATIVE=$2 
+FILE=$3
+if [ "$SUBCOMMAND" = "set" ]; then
 
-if [ "$SUBCOMMAND" = "uninstall" ]; then
+  ##############################################################################
+  ######################### bm set key/certificate/ca ##########################
+  ##############################################################################
+
+	if [ "$OPERATIVE" = "key" ]; then
+	
+		if [ -z ${FILE+x} ]; then 
+			echo "You must provide full path to key.";
+			exit 1;
+		elif [ ! -f "$FILE" ]; then
+			echo "File is not found: $FILE"
+			exit 1;
+		fi
+		
+		awk '{ if (NR == 1) print "'"KEY=$FILE"'"; else print $0}' "$HERE/.env" > "$HERE/temp"
+		cat "$HERE/temp" > "$HERE/.env"
+		rm -f "$HERE/temp"
+
+	elif [ "$OPERATIVE" = "certificate" ]; then
+
+		if [ -z ${FILE+x} ]; then 
+			echo "You must provide full path to certificate.";
+			exit 1;
+		elif [ ! -f "$FILE" ]; then
+			echo "File is not found: $FILE"
+			exit 1;
+		fi
+		
+		awk '{ if (NR == 2) print "'"CERT=$FILE"'"; else print $0}' "$HERE/.env" > "$HERE/temp"
+		cat "$HERE/temp" > "$HERE/.env"
+		rm -f "$HERE/temp"
+
+	elif [ "$OPERATIVE" = "ca" ]; then
+		
+		if [ -z ${FILE+x} ]; then 
+			echo "You must provide full path to certificate.";
+			exit 1;
+		elif [ ! -f "$FILE" ]; then
+			echo "File is not found: $FILE"
+			exit 1;
+		fi
+		
+		awk '{ if (NR == 3) print "'"CA=$FILE"'"; else print $0}' "$HERE/.env" > "$HERE/temp"
+		cat "$HERE/temp" > "$HERE/.env"
+		rm -f "$HERE/temp"
+
+	else
+		echo "  unknown option: $OPERATIVE"
+		echo "  try 'bm --help' for usage help."
+		exit 1;
+	fi
+
+elif [ "$SUBCOMMAND" = "uninstall" ]; then
 
   ##############################################################################
   ################################ bm uninstall ################################
@@ -35,23 +89,23 @@ elif [ "$SUBCOMMAND" = "update" ]; then
     exit 1
   fi
   cd $HERE
-#  CURR_PACKAGE_VERSION=$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
-#    | grep version \
-#    | head -1 \
-#    | awk -F: '{ print $2 }' \
-#    | sed 's/[",]//g' \
-#    | tr -d '[[:space:]]')
-#  THIS_PACKAGE_VERSION=$(cat $HERE/node_modules/browser-mirror/package.json \
-#    | grep version \
-#    | head -1 \
-#    | awk -F: '{ print $2 }' \
-#    | sed 's/[",]//g' \
-#    | tr -d '[[:space:]]')
-#  LATEST_VERSION=$(echo  "$THIS_PACKAGE_VERSION
-#$CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
-#  if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
-#    echo "  Browser-Mirror is up to date."
-#  else
+  CURR_PACKAGE_VERSION=$(curl -s https://raw.githubusercontent.com/Pamblam/browser-mirror/master/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g' \
+    | tr -d '[[:space:]]')
+  THIS_PACKAGE_VERSION=$(cat $HERE/node_modules/browser-mirror/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g' \
+    | tr -d '[[:space:]]')
+  LATEST_VERSION=$(echo  "$THIS_PACKAGE_VERSION
+$CURR_PACKAGE_VERSION" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -g -r | head -1)
+  if [ "$LATEST_VERSION" = "$THIS_PACKAGE_VERSION" ]; then
+    echo "  Browser-Mirror is up to date."
+  else
     [ -f /etc/profile ] && grep -v "$HERE" /etc/profile > temp && mv temp /etc/profile > /dev/null 2>&1
     [ -f "/usr/local/share/man/man1/bm.1" ] && rm -rf /usr/local/share/man/man1/bm.1
     [ -f "/usr/local/share/man/man1/bm.1.gz" ] && rm -rf /usr/local/share/man/man1/bm.1.gz
@@ -183,7 +237,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.1.23"
+  echo "  v1.1.24"
 
 else 
 

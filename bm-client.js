@@ -70,6 +70,7 @@ const BMClient = (function(){
 			this.cursor = null;
 			this.allElementsCBs = [];
 			this.onAllSynced = function(){};
+			this.secure=false;
 			new MutationObserver(mutationsList=>{
 				for (var mutation of mutationsList) {
 					if (mutation.type == 'childList') {
@@ -84,7 +85,16 @@ const BMClient = (function(){
 				}
 			}).observe(document.getElementsByTagName('body')[0], {childList: true, subtree: true});
 		}
-
+		
+		/**
+		 * Tell BMClient to attempt to connect over wss:// instead of ws://
+		 * @returns {BMClient}
+		 */
+		secure(){
+			this.secure=true;
+			return this;
+		}
+		
 		/**
 		 * Set a function to handle all thrown errors
 		 * @param {Function} error_cb - A function that will intercept all errors
@@ -165,7 +175,8 @@ const BMClient = (function(){
 				this.error_cb(new Error("Browser doesn't support websockets"));
 				return this;
 			}
-			this.connection = new WebSocket(`wss://${this.url}:${this.port}`);
+			var protocol=this.secure?"wss":"ws";
+			this.connection = new WebSocket(`${protocol}://${this.url}:${this.port}`);
 			this.connection.onerror = ()=>this.error_cb(new Error('Can\'t establish connection to the server.'));
 			this.connection.onmessage = data=>{
 				data = JSON.parse(data.data);

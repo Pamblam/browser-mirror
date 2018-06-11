@@ -48,6 +48,10 @@ fi
 echo -ne '########################  (95%) Creating logs           \r'
 sleep .1
 touch logs.txt && chmod 777 logs.txt
+touch .env && chmod 777 .env
+echo "KEY=" >> .env
+echo "CERT=" >> .env
+echo "CA=" >> .env
 
 echo -ne '######################### (100%) Done                   \n'
 
