@@ -168,9 +168,13 @@ const BMClient = (function(){
 		
 		/**
 		 * Start mirroring client or master
+		 * @param forceSameBrowser = enum(0,1,2)
+		 *		// 0 = no enforcement, use whatever borwser is in use
+		 *		// 1 = enforce same browser use
+		 *		// 2 = warn the user but let them continue anyway
 		 * @returns {BMClient}
 		 */
-		connect(forceSameBrowser=false){
+		connect(forceSameBrowser=0){
 			if(!window.WebSocket){
 				this.error_cb(new Error("Browser doesn't support websockets"));
 				return this;
@@ -275,7 +279,7 @@ const BMClient = (function(){
 			sessionid: this.sessionid,
 			role: this.role,
 			browser: _getBrowserName(),
-			forceBrowser: forceSameBrowser && this.role == 'master'
+			forceBrowser: this.role == 'master' ? forceSameBrowser : 0
 		}));
 		return this;
 	}
