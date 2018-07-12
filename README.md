@@ -99,9 +99,13 @@ This is mainly called when someone leaves or joins the session.
 
 ##### Connect to the Server
 
-You can optionally pass `true` into the connect method if you wish to force all members to use the same browser as the Master. If your page does a CSS reset this might not be necessary, but if your page renders different on different browsers it's helpful to use this option.
+The connect method takes one optional parameter, a number 0, 1, or 2:
 
-    mirror.connect();
+ - `0` (default) - Do not enforce browser restrictions. This is fine if you use a CSS reset.
+ - `1` - Force all members to use the same browser as the leader for the best experience.
+ - `2` - Warn members that are not using the same browser as the leader that they will have a better experience if they use whatever browser the leader is using, but allow them to continue using the browser they're using.
+
+    mirror.connect(2);
 
 ##### Start the Session
 
