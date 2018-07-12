@@ -228,7 +228,7 @@
 				if(document.getElementById('slavecount')) document.getElementById('slavecount').innerHTML = data.slaves;
 				if(data.message === 'Session has started.') modal.style.display = 'none';
 			});
-			mirror.connect();
+			mirror.connect(2);
 			
 			startBtn.addEventListener('click', function(){
 				this.parentElement.removeChild(this);

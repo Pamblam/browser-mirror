@@ -1,7 +1,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.2.3</h1>
+<h1 align="center">Browser-Mirror v1.2.4</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -68,6 +68,27 @@ The parameters are..
         alert(err.message);
     }); 
     
+##### Listen for confirmation requests
+
+By default, if the app needs to confirm an action with a user it will use the native [`confirm`](https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm) method. If you want to use your own method you can define it with the `onSessionConfirm` method.
+
+Your confirmation method will receive a single object with 2 properties. Its `message` property is the message to be shown to the user. The `confim_action` is to be passed thru to the return object's `action` method, which tells the server which confirmation you're responding to.
+
+Your confirmation method must return an object containing two properties:
+  - `confirm`: The boolean value of the user's response.
+  - `action`: Passed to the function as the `confim_action` string.
+
+Alternatively, your method may return a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) which resolves with the above described object.
+
+    mirror.onSessionConfirm(data=>new Promise(data=>{
+        do_confirm(data.message).then(result=>{
+            done({
+                confirm: result,
+                action: data.confirm_action
+            });
+        });
+    }));
+
 ##### Listen for session changes
 
 This is mainly called when someone leaves or joins the session.
@@ -78,9 +99,13 @@ This is mainly called when someone leaves or joins the session.
 
 ##### Connect to the Server
 
-You can optionally pass `true` into the connect method if you wish to force all members to use the same browser as the Master. If your page does a CSS reset this might not be necessary, but if your page renders different on different browsers it's helpful to use this option.
+The connect method takes one optional parameter, a number 0, 1, or 2:
 
-    mirror.connect();
+ - `0` (default) - Do not enforce browser restrictions. This is fine if you use a CSS reset.
+ - `1` - Force all members to use the same browser as the leader for the best experience.
+ - `2` - Warn members that are not using the same browser as the leader that they will have a better experience if they use whatever browser the leader is using, but allow them to continue using the browser they're using.
+
+    mirror.connect(2);
 
 ##### Start the Session
 
@@ -127,3 +152,4 @@ Everything else works as described above.
 ### TODO
 
  - screencast gif (demo) for readme page
+
