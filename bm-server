@@ -70,12 +70,11 @@ wsServer.on('request', function (request) {
 	};
 	
 	connection.on('message', function (message) {
-		log('msg received '+message);
 		var data = JSON.parse(message.utf8Data);
 		switch(data.action){
 			case "init_session":
 				if(data.role === 'master'){
-					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id:data.sessionid, master:null, slaves:[], started:false, forceBrowser:false, dimensions: {d:[], report_cnt:0, ready_cnt:0}};
+					if(!sessions[data.sessionid]) sessions[data.sessionid] = {id:data.sessionid, serverBrowser:"", master:null, slaves:[], started:false, forceBrowser:0, dimensions: {d:[], report_cnt:0, ready_cnt:0}};
 					session = sessions[data.sessionid];
 					if(!!session.master && connection){
 						connection.sendUTF(JSON.stringify({
@@ -89,10 +88,12 @@ wsServer.on('request', function (request) {
 					
 					broadcastSessionUpdate('Leader has joined session.');
 					browser = data.browser;
-					if(data.forceBrowser) session.forceBrowser = data.browser;
+					session.serverBrowser = data.browser;
+					session.forceBrowser = data.forceBrowser;
 				}else{
 					
 					if(!sessions[data.sessionid] && connection){
+						log('Attempted to join session afer it has ended.');
 						connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: 'This session has already ended.'
@@ -102,6 +103,7 @@ wsServer.on('request', function (request) {
 					
 					session = sessions[data.sessionid];
 					if(session.started && connection){
+						log('Attempted to join session afer it has started.');
 						connection.sendUTF(JSON.stringify({
 							action: 'session_error', 
 							message: 'This session has already started. It\'s too late to join.'
@@ -109,12 +111,23 @@ wsServer.on('request', function (request) {
 						return;
 					}
 				
-					if(session.forceBrowser && session.forceBrowser !== data.browser){
-						if(connection) connection.sendUTF(JSON.stringify({
-							action: 'session_error', 
-							message: `You are using ${data.browser}, but this session requires you to use ${session.forceBrowser}. Please try again in ${session.forceBrowser}.`
-						}));
-						broadcastSessionUpdate(`Member attempted to join session using ${data.browser}... Member is switching to ${session.forceBrowser} now.`);
+					if(session.forceBrowser > 0 && session.serverBrowser !== data.browser){
+						if(session.forceBrowser == 1){
+							log('Attempted to join session with wrong browser: '+data.browser+", "+session.serverBrowser+" is required.");
+							if(connection) connection.sendUTF(JSON.stringify({
+								action: 'session_error', 
+								message: `You are using ${data.browser}, but this session requires you to use ${session.serverBrowser}. Please try again in ${session.serverBrowser}.`
+							}));
+							broadcastSessionUpdate(`Member attempted to join session using ${data.browser}... Member is switching to ${session.serverBrowser} now.`);
+						}else if(session.forceBrowser == 2){
+							log('Confirming join session with browser: '+data.browser+", "+session.serverBrowser+" is recommended.");
+							if(connection) connection.sendUTF(JSON.stringify({
+								action: 'session_confirm', 
+								confirm_action: 'browser_type',
+								message: `You are using ${data.browser}, but this session recommends that you use ${session.serverBrowser}. Would you like to continue in ${session.serverBrowser} anyway?`
+							}));
+							broadcastSessionUpdate(`Member attempted to join session using ${data.browser}... Confirming.`);
+						}
 						return;
 					}
 				
@@ -126,7 +139,27 @@ wsServer.on('request', function (request) {
 				}
 				log(`${role} joined session: ${data.sessionid}`);
 				break;
-				
+			
+			case "respond_confirm":
+				switch(data.confirm_action){
+					case "browser_type":
+						if(!data.confirm && connection){
+							log('Failed to confirm browser usage.');
+							connection.sendUTF(JSON.stringify({
+								action: 'session_error', 
+								message: `Failed to confirm browser usage.`
+							}));
+						}else{
+							log('Confirmed use of unrecommended browser.');
+							index = session.slaves.length;
+							session.slaves.push(connection);
+							role = 'slave';
+							broadcastSessionUpdate('Member has joined session.');
+						}
+						break;
+				}
+				break;
+			
 			case "set_state":
 				if(role !== 'master') break;
 				session.slaves.forEach(slave=>{
@@ -224,7 +257,7 @@ wsServer.on('request', function (request) {
 		if(role == 'slave'){
 			session.slaves[index] = null;
 			broadcastSessionUpdate('Member has left session.');
-			log(`${role} #${index} left session: ${session.id}`);
+			log(`Member left session: ${session.id}`);
 		}else{
 			session.master = null;
 			session.slaves.forEach(slave=>{

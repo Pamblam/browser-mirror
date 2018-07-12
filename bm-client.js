@@ -65,6 +65,7 @@ const BMClient = (function(){
 			this.session_cb = data=>{};
 			this.state_change_cb = state=>{};
 			this.session_error_cb = data=>{this.error_cb(new Error(data.message))};
+			this.session_confirm_cb = data=>{return {confirm:confirm(data.message), action:data.confirm_action}};
 			this.connection = null;
 			this.state = 'pending';
 			this.cursor = null;
@@ -92,6 +93,22 @@ const BMClient = (function(){
 		 */
 		secure(){
 			this._secure=true;
+			return this;
+		}
+		
+		/**
+		 * Set a function to handle all confirmation requests from the server
+		 * @param {Function} confirm_cb - A function that will confirm something with the user
+		 *  function will recieve an object containing two relevant properties:
+		 *		a) data.message - the message to be confirmed with the user
+		 *		b) data.confim_action - to be returned as the "action" property in the result
+		 *	function should return either:
+		 *		a) an object containing the properties "confirm" (bool) and "action" (string)
+		 *		b) a promise that resolves with an object containing the properties "confirm" (bool) and "action" (string)
+		 * @returns {BMClient}
+		 */
+		onSessionConfirm(confirm_cb){
+			this.session_confirm_cb = confirm_cb;
 			return this;
 		}
 		
@@ -226,6 +243,27 @@ const BMClient = (function(){
 					case 'session_error':
 						_giveSlaveCursorBack.call(this);
 						this.session_error_cb(data);
+						break;
+						
+					case 'session_confirm':
+						_giveSlaveCursorBack.call(this);
+						var res = this.session_confirm_cb(data);
+						var handleResponse = response=>{
+							if(!response.hasOwnProperty(confirm) || typeof response.confirm != "boolean") return this.session_error_cb({message: "Result of sessionConfirm method must be an object with a confirm property that is a boolean"});
+							if(!response.action || typeof response.action != "string") return this.session_error_cb({message: "Result of sessionConfirm method must be an object with an action property that is a string"});
+							this.connection.send(JSON.stringify({
+								action: "respond_confirm",
+								confirm_action: response.action,
+								confirm: response.confirm
+							}));
+						};
+						if(res instanceof Promise){
+							res.then(handleResponse).catch(()=>{
+								return this.session_error_cb({message: "Could not confirm."});
+							});
+						}else{
+							handleResponse(res);
+						}
 						break;
 						
 					case 'session_update':
