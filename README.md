@@ -1,7 +1,7 @@
 
 <p align="center">
 <img src="https://i.imgur.com/R2966La.png" height="300">
-<h1 align="center">Browser-Mirror v1.2.4</h1>
+<h1 align="center">Browser-Mirror v1.2.5</h1>
 </p>
 
 Browser-Mirror allows two (or more) remote browsers visiting the same web page to share state without the overhead of screen sharing.
@@ -34,7 +34,7 @@ source /dev/stdin <<< "$(curl -s https://raw.githubusercontent.com/Pamblam/brows
 #### Update the server
 
  1) Stop the server `bm server stop`
- 2) Update the server `bm server update`
+ 2) Update the server `bm update`
  3) Check that you have the latest version with `bm --version`
  4) restart the server `bm server start`
 

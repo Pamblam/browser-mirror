@@ -249,7 +249,7 @@ const BMClient = (function(){
 						_giveSlaveCursorBack.call(this);
 						var res = this.session_confirm_cb(data);
 						var handleResponse = response=>{
-							if(!response.hasOwnProperty(confirm) || typeof response.confirm != "boolean") return this.session_error_cb({message: "Result of sessionConfirm method must be an object with a confirm property that is a boolean"});
+							if(!response.hasOwnProperty('confirm') || typeof response.confirm != "boolean") return this.session_error_cb({message: "Result of sessionConfirm method must be an object with a confirm property that is a boolean"});
 							if(!response.action || typeof response.action != "string") return this.session_error_cb({message: "Result of sessionConfirm method must be an object with an action property that is a string"});
 							this.connection.send(JSON.stringify({
 								action: "respond_confirm",
