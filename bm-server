@@ -124,7 +124,7 @@ wsServer.on('request', function (request) {
 							if(connection) connection.sendUTF(JSON.stringify({
 								action: 'session_confirm', 
 								confirm_action: 'browser_type',
-								message: `You are using ${data.browser}, but this session recommends that you use ${session.serverBrowser}. Would you like to continue in ${session.serverBrowser} anyway?`
+								message: `You are using ${data.browser}, but this session recommends that you use ${session.serverBrowser}. Would you like to continue in ${data.browser} anyway?`
 							}));
 							broadcastSessionUpdate(`Member attempted to join session using ${data.browser}... Confirming.`);
 						}
