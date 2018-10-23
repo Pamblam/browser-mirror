@@ -126,11 +126,10 @@ elif [ "$SUBCOMMAND" = "server" ]; then
     ####################### bm server start [portnumber] #######################
     ############################################################################
 
-    if [ -f "$HERE/running.lock" ]; then
-      echo "  BM Server is already running"
-    else 
-
-      PORT=$3
+	if pgrep -x "bm-server" > /dev/null; then
+	  echo "  BM Server is already running"
+	else 
+	  PORT=$3
       # Default port to 1337 if one isn't supplied
       if [ -z "$PORT" ]; then
         PORT=1337 
@@ -151,10 +150,9 @@ elif [ "$SUBCOMMAND" = "server" ]; then
         exit 1;
       fi
       # Server is not running, port is good, start it up
-      nohup $HERE/bm-server $PORT > $HERE/logs.txt 2>&1 &
-      touch $HERE/running.lock
+      nohup "$HERE/bm-server" $PORT > "$HERE/logs.txt" 2>&1 &
       echo "  BM Server running on port $PORT"
-    fi
+	fi
 
   elif [ "$OPERATIVE" = "stop" ]; then
 
@@ -162,9 +160,12 @@ elif [ "$SUBCOMMAND" = "server" ]; then
     ############################## bm server stop ##############################
     ############################################################################
 
-    killall bm-server
-    rm -rf $HERE/running.lock
-    echo "  BM Server stopped"
+	if pgrep -x "bm-server" > /dev/null; then
+		killall bm-server 2>&1 &
+		echo "  BM Server stopped"
+	else
+		echo "  BM Server is not running"
+	fi
 
   elif [ "$OPERATIVE" = "logs" ]; then
     
@@ -180,11 +181,11 @@ elif [ "$SUBCOMMAND" = "server" ]; then
     ############################# bm server status #############################
     ############################################################################
 
-  if [ -f "$HERE/running.lock" ]; then
-        echo "  BM Server is running"
-    else
-        echo "  BM Server is not running"
-    fi
+	if pgrep -x "bm-server" > /dev/null; then
+		echo "  BM Server is running"
+	else
+		echo "  BM Server is not running"
+	fi
 
   else
 
@@ -237,7 +238,7 @@ elif [ "$SUBCOMMAND" = "--version" ]; then
   ############################### bm --version #################################
   ##############################################################################
 
-  echo "  v1.2.6"
+  echo "  v1.2.7"
 
 else 
 
